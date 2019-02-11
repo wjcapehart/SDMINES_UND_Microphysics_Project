@@ -30,3 +30,18 @@
 *.exe
 *.out
 *.app
+
+# NetCDF Large Data Files
+*.nc
+*.nc4
+*.nc3
+met_em.d0*
+wrfout_d0*
+wrfbdy_d*
+wrfinput_d*
+wrfrst*
+FILE:*
+*.grib
+*.grib2
+*.grb
+*.grb2
