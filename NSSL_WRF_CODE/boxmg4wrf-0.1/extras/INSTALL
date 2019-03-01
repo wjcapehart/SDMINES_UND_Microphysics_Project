@@ -1,0 +1,9 @@
+===============================================================================
+INSTALL: Extras for BoxMG-MPI                                  boxmg-mpi-extras
+===============================================================================
+
+This "extras" package is included as a subdirectory of BoxMG-MPI releases.
+Instructions for building the "extras" library are in the extras/Makefile,
+as well as the top-level INSTALL file.
+
+===============================================================================

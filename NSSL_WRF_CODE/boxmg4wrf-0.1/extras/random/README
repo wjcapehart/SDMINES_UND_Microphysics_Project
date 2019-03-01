@@ -1,0 +1,47 @@
+==============================================================================
+
+RAND ->  BMG_RAND
+
+This directory contains the random number generator, RAND, from the
+SLATEC Library written by W. Fullerton.  Below you will find the
+contents of the original readme file from the SLATEC Common
+Mathematical Library, and Section 4 from the Guide notes that this
+software is in the public domain.  The software is available on netlib
+
+http://www.netlib.org/slatec/fnlib/rand.f
+
+Here we have modified the function to be REAL*8, and to avoid naming
+conflicts we've renamed it BMG_RAND.
+
+==============================================================================
+
+-------------------------
+SLATEC README:
+-------------------------
+
+SLATEC Common Mathematical Library, Version 4.1, July 1993
+a comprehensive software library containing over
+1400 general purpose mathematical and statistical routines
+written in Fortran 77.
+
+--------------------------
+SLATEC GUIDE (SECTION 4):
+--------------------------
+
+*******************************************************************************
+ 
+SECTION 4.  OBTAINING THE LIBRARY
+ 
+The Library is in the public domain and distributed by the Energy Science
+and Technology Software Center.
+ 
+               Energy Science and Technology Software Center
+               P.O. Box 1020
+               Oak Ridge, TN  37831
+ 
+               Telephone  615-576-2606
+               E-mail  estsc%a1.adonis.mrouter@zeus.osti.gov
+ 
+ 
+ 
+*******************************************************************************

@@ -1,0 +1,1049 @@
+# ============================================================================
+#
+#  Makefile Defaults:  OSX (Darwin) - Power PC
+#
+# =======================================================================
+# $license_flag$
+# =======================================================================
+# --------------------------
+#  Generic Compiler Notes:
+# --------------------------
+#
+#    **NOTE: For MPI code any Name Mangling compatibility options should 
+#            already be included in the mpif77/mpicc scripts. So it is
+#            to aid in resolving problems with inconsistent installations,
+#            MPI distributions that don't provide compiler scripts, and
+#            serial components of the code.
+#
+# ============================================================================
+
+# -----------------------------------------------------
+#  Assume serial code.
+# -----------------------------------------------------
+
+ifndef BOXMG_MPI
+  BOXMG_MPI=no
+endif
+
+ifndef BOXMG_OMP
+  BOXMG_OMP=no
+endif
+
+# ------------------------------------------------------
+#  Assume shared libraries
+# ------------------------------------------------------
+
+ifndef BOXMG_STATIC_LIBS
+   BOXMG_STATIC_LIBS=no
+endif
+
+# ------------------------------------------------------
+#   Default MPI distrubution
+# ------------------------------------------------------
+
+ifndef BOXMG_MPI_DIST
+  BOXMG_MPI_DIST=mpich
+endif
+
+# ------------------------------------------------------
+#  Default to GNU compilers.
+# ------------------------------------------------------
+
+ifndef BOXMG_COMPILER
+  BOXMG_COMPILER=gnu
+endif
+
+# ------------------------------------------------------
+#  GCC version
+# ------------------------------------------------------
+
+ifeq ($(BOXMG_COMPILER),gnu) 
+  ifndef BOXMG_GCC_VER
+    BOXMG_GCC_VER = $(shell gcc --version | grep gcc | sed -e 's/gcc (GCC) //' -e 's/\..*//')
+  endif
+endif
+
+# -------------------------------
+#  Generic Linux CPP flag
+# -------------------------------
+
+# CPPFLAGS += -DLINUX
+
+# >>>>>>>>>>>>>>>>>>>>> SET: ABSOFT COMPILER OPTIONS <<<<<<<<<<<<<<<<<<<<<
+ifeq ($(BOXMG_COMPILER),absoft) 
+
+  #
+  # Fortran NameMangling: underscores (single|double)
+  #
+  ifndef BOXMG_FC_UNDERSCORES
+    BOXMG_FC_UNDERSCORES=double
+  endif
+
+  ifeq ($(BOXMG_FC_UNDERSCORES),double)
+    F77_UNDERSCORES = -B108
+    F90_UNDERSCORES = -B108
+  else	 
+  ifeq ($(BOXMG_FC_UNDERSCORES),single)
+    F77_UNDERSCORES = -N15
+    F90_UNDERSCORES = -YEXT_SFX="_"
+  endif
+  endif
+
+  #
+  # Fortran NameMangling: case (upper|lower)
+  #
+  ifndef BOXMG_FC_CASE
+    BOXMG_FC_CASE=lower
+  endif
+
+  ifeq ($(BOXMG_FC_CASE),lower)
+    F77_CASE = -f
+    F90_CASE = -YEXT_NAMES=LCS -YCOM_NAMES=LCS
+  else	 
+  ifeq ($(BOXMG_FC_CASE),upper)
+    F77_CASE = -N109
+    F90_CASE = -YEXT_NAMES=UCS -YCOM_NAMES=UCS
+  else
+  endif
+  endif
+
+  # 
+  # Fortran NameMangling:
+  # 
+  F77_NAME_MANGLE = $(F77_CASE) $(F77_UNDERSCORES)
+  F90_NAME_MANGLE = $(F90_CASE) $(F90_UNDERSCORES)
+
+  # 
+  # System Timers:
+  #
+  ifndef BOXMG_TIMER
+    BOXMG_TIMER=ETIME_external
+  endif
+
+  ifeq ($(BOXMG_PROFILE),yes)
+    F77_PROF_OPT = -P	
+    F90_PROF_OPT = -P
+    C_PROF_OPT   = -pg
+    CXX_PROF_OPT = -pg
+  else	
+    F77_PROF_OPT = 
+    F90_PROF_OPT = 
+    C_PROF_OPT   = 
+    CXX_PROF_OPT = 
+  endif
+
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  FFLAGS   = $(F77_PROF_OPT) $(F77_NAME_MANGLE)
+  F90FLAGS = $(F90_PROF_OPT) $(F90_NAME_MANGLE)
+  CFLAGS   = $(C_PROF_OPT)
+  CXXFLAGS = $(CXX_PROF_OPT) 
+
+  ifeq ($(BOXMG_CLEVEL),opt)
+    ifndef BOXMG_TUNE
+      BOXMG_TUNE = -cpu:host
+    endif
+    FFLAGS   += $(BOXMG_FINC) -s  $(BOXMG_TUNE) -O3
+    F90FLAGS += $(BOXMG_FINC) -s -q -YCFRL=1 $(BOXMG_TUNE) -O3
+    CFLAGS   += $(BOXMG_CINC) -Wall -O3
+    CXXFLAGS += $(BOXMG_CINC) -Wall -O3
+  else
+    ifndef BOXMG_TUNE
+      BOXMG_TUNE = -cpu:p5
+    endif
+    FFLAGS   += $(BOXMG_FINC) -s $(BOXMG_TUNE) -C -g
+    F90FLAGS += $(BOXMG_FINC) -s -q -YCFRL=1 $(BOXMG_TUNE) -g
+    CFLAGS   += $(BOXMG_CINC) -Wall -g
+    CXXFLAGS += $(BOXMG_CINC) -Wall -g 
+  endif
+
+  # >>>>>>>>>>>>>>>>>>>>> ABSOFT: MPI <<<<<<<<<<<<<<<<<<<
+  ifeq ($(BOXMG_MPI),yes)
+
+    # =====================
+    #  Compiler:	
+    # =====================
+
+    ifeq ($(BOXMG_MPI_DIST),mpich)
+
+      FC  = mpif77
+      F90 = mpif90 
+      CC  = mpicc
+      CXX = mpiCC
+
+    else
+    ifeq ($(BOXMG_MPI_DIST),lampi)
+
+      FC  = f77
+      F90 = f90
+      CC  = gcc
+      CXX = g++
+
+      FFLAGS   += $(MPI_COMPILE_FLAGS)
+      F90FLAGS += $(MPI_COMPILE_FLAGS)
+      CFLAGS   += $(MPI_COMPILE_FLAGS)
+      CXXFLAGS += $(MPI_COMPILE_FLAGS)
+
+    endif
+    endif
+
+  # >>>>>>>>>>>>>>>>>>>>> ABSOFT: SERIAL <<<<<<<<<<<<<<<<
+  else
+
+    # =====================
+    #  Compiler:
+    # =====================
+
+    FC  = f77
+    F90 = f90
+    CC  = gcc 
+    CXX	= g++
+
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS = 
+
+  ifeq ($(BOXMG_STATIC_LIBS),yes) 
+    LD_STATIC = -X -static
+  else
+    LD_STATIC =
+  endif
+
+  F77_LD = $(FC)
+  F77_LFLAGS = $(LD_STATIC)
+
+  F90_LD = $(F90) $(BOXMG_FINC)
+  F90_LFLAGS = $(LD_STATIC)
+
+  CC_LD = $(CC)
+  CC_LFLAGS = 
+
+  CXX_LD = $(CXX)
+  CXX_LFLAGS = 
+
+  # ======================
+  #  F90 module path:
+  # ======================
+
+  MPOPT = -p
+
+  # ======================
+  #  F90 module names:
+  # ======================
+
+  F90_MOD_MANGLE = upper
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+  # ======================
+  #  System libraries:
+  # ======================
+
+  SYSLIBS = -lU77
+
+# >>>>>>>>>>>>>>>>>>>>> SET: PORTLAND GROUP COMPILER OPTIONS <<<<<<<<<<<<<
+else
+# elseif: begin
+ifeq ($(BOXMG_COMPILER),portland)
+
+  #
+  # Fortran NameMangling: underscores (single|double)
+  #
+  ifndef BOXMG_FC_UNDERSCORES
+    BOXMG_FC_UNDERSCORES=single
+  endif
+
+  ifeq ($(BOXMG_FC_UNDERSCORES),double)
+    F77_UNDERSCORES = -Msecond_underscore
+    F90_UNDERSCORES = -Msecond_underscore
+  else	
+  ifeq ($(BOXMG_FC_UNDERSCORES),single)
+    F77_UNDERSCORES = -Mnosecond_underscore
+    F90_UNDERSCORES = -Mnosecond_underscore
+  endif
+  endif
+
+  #
+  # Fortran NameMangling: case (lower)
+  # 
+  #ifndef BOXMG_FC_CASE
+  BOXMG_FC_CASE=lower
+  #endif
+
+  ifeq ($(BOXMG_FC_CASE),lower)
+    F77_CASE = -Mnoupcase
+    F90_CASE = -Mnoupcase
+  endif
+
+  # 
+  # Fortran NameMangling:
+  # 
+  F77_NAME_MANGLE = $(F77_CASE) $(F77_UNDERSCORES)
+  F90_NAME_MANGLE = $(F90_CASE) $(F90_UNDERSCORES)
+
+  # 
+  # System Timers:
+  #
+  ifndef BOXMG_TIMER
+    BOXMG_TIMER=ETIME_external
+  endif
+
+  ifeq ($(BOXMG_PROFILE),yes)
+    F77_PROF_OPT = -Mprof=func,lines
+    F90_PROF_OPT = -Mprof=func,lines
+    C_PROF_OPT   = -Mprof=func,lines
+    CXX_PROF_OPT = -Mprof=func,lines
+  else	
+    F77_PROF_OPT = 
+    F90_PROF_OPT = 
+    C_PROF_OPT   = 
+    CXX_PROF_OPT = 
+  endif
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  FFLAGS   = $(F77_PROF_OPT) $(F77_NAME_MANGLE)
+  F90FLAGS = $(F90_PROF_OPT) $(F90_NAME_MANGLE)
+  CFLAGS   = $(C_PROF_OPT)
+  CXXFLAGS = $(CXX_PROF_OPT) 
+
+  ifeq ($(BOXMG_CLEVEL),opt)
+    ifndef BOXMG_TUNE
+      BOXMG_TUNE =  -Munroll -Mscalarsse -Mvect=sse -Mcache_align -Mflushz
+    endif
+    FFLAGS   += $(BOXMG_FINC) $(BOXMG_TUNE) -O2 -Minline 
+    F90FLAGS += $(BOXMG_FINC) $(BOXMG_TUNE) -O2 -Minline 
+    CFLAGS   += $(BOXMG_CINC) -Minform=fatal -O2
+    CXXFLAGS += $(BOXMG_CINC) -Minform=fatal -O2
+  else
+    FFLAGS   += $(BOXMG_FINC) -Minform=inform -Mbounds -g 
+    F90FLAGS += $(BOXMG_FINC) -Minform=inform -Mbounds -g 
+    CFLAGS   += $(BOXMG_CINC) -Minform=inform -g 
+    CXXFLAGS += $(BOXMG_CINC) -Minform=inform -g 
+  endif
+
+  # >>>>>>>>>>>>>>>>>>>>> PORTLAND GROUP: MPI <<<<<<<<<<<<<<<<<<<
+  ifeq ($(BOXMG_MPI),yes)
+
+    # =====================
+    #  Compiler:	
+    # =====================
+
+    ifeq ($(BOXMG_MPI_DIST),mpich)
+
+      FC  = mpif77
+      F90 = mpif90 
+      CC  = mpicc
+      CXX = mpiCC
+
+    else
+    ifeq ($(BOXMG_MPI_DIST),lampi)
+
+      FC  = pgf77
+      F90 = pgf90
+      CC  = pgcc
+      CXX = pgCC
+
+      FFLAGS   += $(MPI_COMPILE_FLAGS)
+      F90FLAGS += $(MPI_COMPILE_FLAGS)
+      CFLAGS   += $(MPI_COMPILE_FLAGS)
+      CXXFLAGS += $(MPI_COMPILE_FLAGS)
+
+    endif
+    endif
+
+
+  # >>>>>>>>>>>>>>>>>>>>> PORTLAND GROUP: SERIAL <<<<<<<<<<<<<<<<
+  else
+
+    # =====================
+    #  Compiler:
+    # =====================
+
+    FC  = pgf77
+    F90 = pgf90
+    CC  = pgcc 
+    CXX = pgCC 
+
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS =
+
+  ifeq ($(BOXMG_STATIC_LIBS),yes) 
+    LD_STATIC = -Bstatic
+  else
+    LD_STATIC =
+  endif
+
+  F77_LD = $(FC)
+  F77_LFLAGS = $(LD_STATIC)
+
+  F90_LD = $(F90)
+  F90_LFLAGS = $(LD_STATIC)
+
+  CC_LD = $(CC)
+  CC_LFLAGS = $(LD_STATIC)
+
+  CXX_LD = $(CXX)
+  CXX_LFLAGS = $(LD_STATIC)
+
+  # ======================
+  #  F90 modules path:
+  # ======================
+
+  MPOPT = -module 
+
+  # ======================
+  #  MOD case
+  # ======================
+
+  F90_MOD_MANGLE = lower
+
+  # ======================
+  #  F90 move modules
+  # ======================
+
+  MODMV = no
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+  # ======================
+  #  System libraries:
+  # ======================
+
+  SYSLIBS = 
+
+  ifeq ($(BOXMG_MPI_DIST),lampi)
+     SYSLIBS += $(MPI_LD_FLAGS) $(LLOPT)mpi
+  endif
+
+# elseif: end
+# >>>>>>>>>>>>>>>>>>>>> SET: INTEL COMPILER OPTIONS <<<<<<<<<<<<<<<<<
+else
+# elseif: begin
+ifeq ($(BOXMG_COMPILER),intel)
+
+  #
+  # Fortran NameMangling: underscores (single|double|none)
+  #
+  ifndef BOXMG_FC_UNDERSCORES
+    BOXMG_FC_UNDERSCORES=single
+  endif
+
+  ifeq ($(BOXMG_FC_UNDERSCORES),double)
+    F77_UNDERSCORES = -assume 2underscores
+    F90_UNDERSCORES = -assume 2underscores
+  else	
+  ifeq ($(BOXMG_FC_UNDERSCORES),single)
+    F77_UNDERSCORES = -assume underscore
+    F90_UNDERSCORES = -assume underscore
+  else	
+  ifeq ($(BOXMG_FC_UNDERSCORES),none)
+    F77_UNDERSCORES = -assume nounderscore
+    F90_UNDERSCORES = -assume nounderscore
+  endif
+  endif
+  endif
+
+  #
+  # Fortran NameMangling: case (upper|lower)
+  #
+  ifndef BOXMG_FC_CASE
+    BOXMG_FC_CASE=lower
+  endif
+
+  ifeq ($(BOXMG_FC_CASE),lower)
+    F77_CASE = -names lowercase
+    F90_CASE = -names lowercase
+  else	
+  ifeq ($(BOXMG_FC_CASE),upper)
+    F77_CASE = -names uppercase
+    F90_CASE = -names uppercase
+  endif
+  endif
+
+  # 
+  # Fortran NameMangling:
+  # 
+  F77_NAME_MANGLE = $(F77_CASE) $(F77_UNDERSCORES)
+  F90_NAME_MANGLE = $(F90_CASE) $(F90_UNDERSCORES)
+
+  # 
+  #  System Timers:
+  #
+  ifndef BOXMG_TIMER
+    BOXMG_TIMER=ETIME_external
+  endif
+
+  ifeq ($(BOXMG_PROFILE),yes)
+    F77_PROF_OPT =
+    F90_PROF_OPT =
+    C_PROF_OPT   =
+    CXX_PROF_OPT =
+  else	
+    F77_PROF_OPT = 
+    F90_PROF_OPT = 
+    C_PROF_OPT   = 
+    CXX_PROF_OPT = 
+  endif
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  FFLAGS   = $(F77_PROF_OPT) $(F77_NAME_MANGLE)
+  F90FLAGS = $(F90_PROF_OPT) $(F90_NAME_MANGLE)
+  CFLAGS   = $(C_PROF_OPT)
+  CXXFLAGS = $(CXX_PROF_OPT) 
+
+  ifeq ($(BOXMG_CLEVEL),opt)
+    ifndef BOXMG_TUNE
+      BOXMG_TUNE = 
+    endif
+    FFLAGS   += $(BOXMG_FINC) $(BOXMG_TUNE) -O3 
+    F90FLAGS += $(BOXMG_FINC) $(BOXMG_TUNE) -O3 
+    CFLAGS   += $(BOXMG_CINC) -O2
+    CXXFLAGS += $(BOXMG_CINC) -O2
+  else
+    FFLAGS   += $(BOXMG_FINC) -align all -check bounds -fpe0 -g -warn all
+    F90FLAGS += $(BOXMG_FINC) -align all -check bounds -fpe0 -g -warn all 
+    CFLAGS   += $(BOXMG_CINC) -g -Wall -Wcheck
+    CXXFLAGS += $(BOXMG_CINC) -g -Wall -Wcheck
+  endif
+
+  # >>>>>>>>>>>>>>>>>>>>> INTEL: MPI <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+  ifeq ($(BOXMG_MPI),yes)
+
+    # =====================
+    #  Compiler:	
+    # =====================
+
+    ifeq ($(BOXMG_MPI_DIST),mpich)
+
+      FC  = mpif77
+      F90 = mpif90 
+      CC  = mpicc
+      CXX = mpiCC
+
+    else
+    ifeq ($(BOXMG_MPI_DIST),lampi)
+
+      FC  = ifort
+      F90 = ifort
+      CC  = icc
+      CXX = icpc
+
+      FFLAGS   += $(MPI_COMPILE_FLAGS)
+      F90FLAGS += $(MPI_COMPILE_FLAGS)
+      CFLAGS   += $(MPI_COMPILE_FLAGS)
+      CXXFLAGS += $(MPI_COMPILE_FLAGS)
+
+    endif
+    endif
+
+  # >>>>>>>>>>>>>>>>>>>>> INTEL: SERIAL <<<<<<<<<<<<<<<<<<<<<<<<<<
+  else
+
+    # =====================
+    #  Compiler:
+    # =====================
+
+    FC  = ifort
+    F90 = ifort
+    CC  = icc
+    CXX = icpc
+
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS =
+
+  ifeq ($(BOXMG_STATIC_LIBS),yes) 
+    LD_STATIC = -Bstatic
+  else
+    LD_STATIC =
+  endif
+
+  F77_LD = $(FC)
+  F77_LFLAGS = $(LD_STATIC)
+
+  F90_LD = $(F90)
+  F90_LFLAGS = $(LD_STATIC)
+
+  CC_LD = $(CC)
+  CC_LFLAGS =
+
+  CXX_LD = $(CXX)
+  CXX_LFLAGS =
+
+  # ======================
+  #  F90 modules path:
+  # ======================
+
+  MPOPT = -I
+
+  # ======================
+  #  MOD case
+  # ======================
+
+  F90_MOD_MANGLE = lower
+
+  # ======================
+  #  F90 move modules
+  # ======================
+
+  MODMV = no
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+  # ======================
+  #  System libraries:
+  # ======================
+
+  SYSLIBS = 
+
+  ifeq ($(BOXMG_MPI_DIST),lampi)
+     SYSLIBS += $(MPI_LD_FLAGS) $(LLOPT)mpi
+  endif
+
+else
+# elseif: end
+# >>>>>>>>>>>>>>>>>>>>> ELSE IF: GNU GCC 3.x OPTIONS  <<<<<<<<<<<<<<<<<
+ifeq ($(BOXMG_COMPILER),gnu)
+ifeq ($(BOXMG_GCC_VER),3)
+
+  #
+  # Fortran NameMangling: underscores (single|double)
+  #
+  ifndef BOXMG_FC_UNDERSCORES
+    BOXMG_FC_UNDERSCORES=single
+  endif
+
+  ifeq ($(BOXMG_FC_UNDERSCORES),double)
+    F77_UNDERSCORES =
+  else	
+  ifeq ($(BOXMG_FC_UNDERSCORES),single)
+    F77_UNDERSCORES = --no-second-underscore
+  endif
+  endif
+
+  #
+  # Fortran NameMangling: case (lower)
+  #
+  #ifndef BOXMG_FC_CASE
+  BOXMG_FC_CASE=lower
+  #endif
+
+  ifeq ($(BOXMG_FC_CASE),lower)
+    F77_CASE = 
+    F90_CASE = 
+  endif
+
+  # 
+  # Fortran NameMangling:
+  # 
+  F77_NAME_MANGLE = $(F77_CASE) $(F77_UNDERSCORES)
+  F90_NAME_MANGLE = $(F90_CASE) $(F90_UNDERSCORES)
+
+  # 
+  #  System Timers:
+  #
+  ifndef BOXMG_TIMER
+    BOXMG_TIMER=ETIME_external
+  endif
+
+  ifeq ($(BOXMG_PROFILE),yes)
+    F77_PROF_OPT = -pg
+    C_PROF_OPT   = -pg
+    CXX_PROF_OPT = -pg
+  else	
+    F77_PROF_OPT = 
+    C_PROF_OPT   = 
+    CXX_PROF_OPT = 
+  endif
+
+  FFLAGS   = $(F77_PROF_OPT) $(F77_NAME_MANGLE)
+  CFLAGS   = $(C_PROF_OPT)
+  CXXFLAGS = $(CXX_PROF_OPT) 
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  ifeq ($(BOXMG_CLEVEL),opt)
+    FFLAGS   += $(BOXMG_FINC) -Wall -O3
+    CFLAGS   += $(BOXMG_CINC) -Wall -O3
+    CXXFLAGS += $(BOXMG_CINC) -Wall -O3
+  else
+    FFLAGS   += $(BOXMG_FINC) -Wall -g
+    CFLAGS   += $(BOXMG_CINC) -Wall -g
+    CXXFLAGS += $(BOXMG_CINC) -Wall -g
+  endif
+
+  # =====================
+  #  COMPILER:
+  # =====================
+
+  ifeq ($(BOXMG_MPI),yes)
+
+    ifeq ($(BOXMG_MPI_DIST),mpich)
+
+      FC  = mpif77
+      CC  = mpicc
+      CXX = mpiCC
+
+    else
+    ifeq ($(BOXMG_MPI_DIST),lampi)
+
+      FC  = g77
+      F90 = gcc
+      CC  = g++
+
+      FFLAGS   += $(MPI_COMPILE_FLAGS)
+      CFLAGS   += $(MPI_COMPILE_FLAGS)
+      CXXFLAGS += $(MPI_COMPILE_FLAGS)
+
+    endif
+    endif
+
+  else
+
+    FC  = g77
+    CC  = gcc 
+    CXX = g++
+
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS = 
+
+  ifeq ($(BOXMG_STATIC_LIBS),yes) 
+    LD_STATIC = -Bstatic
+  else
+    LD_STATIC =
+  endif
+
+  F77_LD = $(FC)
+  F77_LFLAGS = $(LD_STATIC)
+
+  CC_LD     = $(CC)
+  CC_LFLAGS = 
+
+  CXX_LD     = $(CXX)
+  CXX_LFLAGS = 
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+  # ======================
+  #  System libraries:
+  # ======================
+
+  SYSLIBS = 
+
+  ifeq ($(BOXMG_MPI_DIST),lampi)
+     SYSLIBS += $(MPI_LD_FLAGS) $(LLOPT)mpi
+  endif
+
+else
+# >>>>>>>>>>>>>>>>>>>>> ELSE IF: GNU GCC 4.x OPTIONS  <<<<<<<<<<<<<<<<<
+ifeq ($(BOXMG_GCC_VER),4)
+
+  #
+  # Fortran NameMangling: underscores (single|double)
+  #
+  ifndef BOXMG_FC_UNDERSCORES
+    BOXMG_FC_UNDERSCORES=single
+  endif
+
+  ifeq ($(BOXMG_FC_UNDERSCORES),double)
+    F77_UNDERSCORES = -fsecond-underscore
+    F90_UNDERSCORES = -fsecond-underscore
+  else	
+  ifeq ($(BOXMG_FC_UNDERSCORES),single)
+    F77_UNDERSCORES = -funderscoring
+    F90_UNDERSCORES = -funderscoring
+  else
+    F77_UNDERSCORES = -fno-underscoring
+    F90_UNDERSCORES = -fno-underscoring
+  endif
+  endif
+
+  #
+  # Fortran NameMangling: case (lower)
+  #
+  #ifndef BOXMG_FC_CASE
+  BOXMG_FC_CASE=lower
+  #endif
+
+  ifeq ($(BOXMG_FC_CASE),lower)
+    F77_CASE = 
+    F90_CASE = 
+  endif
+
+  # 
+  # Fortran NameMangling:
+  # 
+  F77_NAME_MANGLE = $(F77_CASE) $(F77_UNDERSCORES)
+  F90_NAME_MANGLE = $(F90_CASE) $(F90_UNDERSCORES)
+
+  ifeq ($(BOXMG_PROFILE),yes)
+    F77_PROF_OPT = -pg
+    F90_PROF_OPT = -pg
+    C_PROF_OPT   = -pg
+    CXX_PROF_OPT = -pg
+  else	
+    F77_PROF_OPT = 
+    F90_PROF_OPT = 
+    C_PROF_OPT   = 
+    CXX_PROF_OPT = 
+  endif
+
+  # 
+  #  System Timers:
+  #
+  ifndef BOXMG_TIMER
+    BOXMG_TIMER=ETIME_intrinsic
+  endif
+
+  FFLAGS   = $(F77_PROF_OPT) $(F77_NAME_MANGLE)
+  F90FLAGS = $(F90_PROF_OPT) $(F90_NAME_MANGLE)
+  CFLAGS   = $(C_PROF_OPT)
+  CXXFLAGS = $(CXX_PROF_OPT) 
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  #  turn off -Wunused-labels for now.
+  ifeq ($(BOXMG_CLEVEL),opt)
+    FFLAGS   += $(BOXMG_FINC) -Waliasing -Wsurprising -O3
+    F90FLAGS += $(BOXMG_FINC) -Waliasing -Wsurprising -O3
+    CFLAGS   += $(BOXMG_CINC) -Wall -O3
+    CXXFLAGS += $(BOXMG_CINC) -Wall -O3
+  else
+    # -fbounds-check (hmm?)
+    FFLAGS   += $(BOXMG_FINC) -Waliasing -Wsurprising -g
+    F90FLAGS += $(BOXMG_FINC) -Waliasing -Wsurprising -g
+    CFLAGS   += $(BOXMG_CINC) -Wall -g
+    CXXFLAGS += $(BOXMG_CINC) -Wall -g
+  endif
+
+  # =====================
+  #  COMPILER:
+  # =====================
+
+  ifeq ($(BOXMG_MPI),yes)
+
+    ifeq ($(BOXMG_MPI_DIST),mpich)
+
+      FC  = mpif77
+      F90 = mpif90 
+      CC  = mpicc
+      CXX = mpiCC
+
+    else
+    ifeq ($(BOXMG_MPI_DIST),lampi)
+
+      FC  = gfortran
+      F90 = gfortran
+      CC  = gcc
+      CXX = g++
+
+      FFLAGS   += $(MPI_COMPILE_FLAGS)
+      F90FLAGS += $(MPI_COMPILE_FLAGS)
+      CFLAGS   += $(MPI_COMPILE_FLAGS)
+      CXXFLAGS += $(MPI_COMPILE_FLAGS)
+
+    endif
+    endif
+
+  else
+
+    FC  = gfortran
+    F90 = gfortran
+    CC  = gcc 
+    CXX = g++
+
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS =
+
+  ifeq ($(BOXMG_STATIC_LIBS),yes) 
+    LD_STATIC = -static
+  else
+    LD_STATIC =
+  endif
+
+  F77_LD = $(FC)
+  F77_LFLAGS = $(LD_STATIC)
+
+  F90_LD = $(F90)
+  F90_LFLAGS = $(LD_STATIC)
+
+  CC_LD = $(CC)
+  CC_LFLAGS =
+
+  CXX_LD = $(CXX)
+  CXX_LFLAGS =
+
+  # ======================
+  #  F90 modules path:
+  # ======================
+
+  MPOPT = -M
+
+  # ======================
+  #  MOD case
+  # ======================
+
+  F90_MOD_MANGLE = lower
+
+  # ======================
+  #  F90 move modules
+  # ======================
+
+  MODMV = no
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+  # ======================
+  #  System libraries:
+  # ======================
+
+  SYSLIBS =
+
+  ifeq ($(BOXMG_MPI_DIST),lampi)
+     SYSLIBS += $(MPI_LD_FLAGS) $(LLOPT)mpi
+  endif
+
+endif
+endif
+endif
+endif
+endif
+endif
+
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ENDIF <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ifeq ($(BOXMG_TIMER),ETIME_external)
+  CPPFLAGS += -DBOXMG_TIMER_ETIMEe
+else
+ifeq ($(BOXMG_TIMER),ETIME_intrinsic) 
+  CPPFLAGS += -DBOXMG_TIMER_ETIMEi
+else
+ifeq ($(BOXMG_TIMER),F95_CPU_TIME)
+  CPPFLAGS += -DBOXMG_TIMER_F95_CPU_TIME
+endif
+endif
+endif
+
+# ======================
+#  Archiver:
+# ======================
+
+AR = ar
+ARFLAGS = csrv 
+
+RANLIB = ranlib
+
+# ======================
+#  Make
+# ======================
+
+MFLAGS = --no-print-directory
+MAKE = make
+
+# ======================
+#  Tools: 
+# ======================
+
+MV = /bin/mv 
+RM = /bin/rm
+CP = /bin/cp
+CD = cd
+
+MKDIR = /bin/mkdir
+
+CHMOD = /bin/chmod
+CHGRP = /bin/chgrp
+
+# ============================================================================

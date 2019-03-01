@@ -1,0 +1,560 @@
+# ============================================================================
+#
+#  Makefile Defaults:  SunOS - sparc
+#
+# =======================================================================
+# $license_flag$
+# =======================================================================
+# --------------------------
+#  Generic Compiler Notes:
+# --------------------------
+#
+#    **NOTE: For MPI code any Name Mangling compatibility options should 
+#            already be included in the mpif77/mpicc scripts. So it is
+#            to aid in resolving problems with inconsistent installations,
+#            MPI distributions that don't provide compiler scripts, and
+#            serial components of the code.
+#
+# ============================================================================
+
+# -----------------------------------------------------
+#  Assume serial code.
+# -----------------------------------------------------
+
+ifndef MPI
+  MPI=no
+endif
+
+# ------------------------------------------------------
+#  Assume shared libraries
+# ------------------------------------------------------
+
+ifndef STATIC_LIBS
+   STATIC_LIBS=no
+endif
+
+# ------------------------------------------------------
+#   Default MPI distrubution
+# ------------------------------------------------------
+
+ifndef MPI_DIST
+  MPI_DIST=mpich
+endif
+
+# ------------------------------------------------------
+#  Default to GNU compilers.
+# ------------------------------------------------------
+
+ifndef COMPILER
+  COMPILER=gnu
+endif
+
+# ------------------------------------------------------
+#  GCC version
+# ------------------------------------------------------
+
+ifeq ($(COMPILER),gnu) 
+  ifndef GCC_VER
+    GCC_VER = $(shell gcc --version | grep gcc | sed -e 's/gcc (GCC) //' -e 's/\..*//')
+  endif
+endif
+
+# ------------------------------------------------------
+#  Default profiling
+# ------------------------------------------------------
+
+ifndef PROFILE
+  PROFILE=no
+endif
+
+# -------------------------------
+#  Generic SUN CPP flag
+# -------------------------------
+
+# CPPFLAGS += -DSUN
+
+# >>>>>>>>>>>>>>>>>>>>> Set: SUN COMPILER OPTIONS <<<<<<<<<<<<<<<<<<<<<
+ifeq ($(COMPILER),sun) 
+
+  #
+  # Specify Fortran NameMangling__ 
+  #
+  ifndef FC_NAME_MANGLE
+    FC_NAME_MANGLE=single
+  endif
+
+  ifeq ($(FC_NAME_MANGLE),single)
+    F77_NAME_MANGLE = -ext_names=underscores
+    F90_NAME_MANGLE = -ext_names=underscores
+  else
+  ifeq ($(FC_NAME_MANGLE),none)
+    F77_NAME_MANGLE = -ext_names=plain
+    F90_NAME_MANGLE = -ext_names=plain
+  endif
+  endif
+
+  ifeq ($(PROFILE),yes)
+    F77_PROF_OPT = -p	
+    F90_PROF_OPT = -p
+    C_PROF_OPT   = -p
+    CXX_PROF_OPT = -p
+  else	
+    F77_PROF_OPT = 
+    F90_PROF_OPT = 
+    C_PROF_OPT   = 
+    CXX_PROF_OPT = 
+  endif
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  FFLAGS   = $(F77_PROF_OPT) $(F77_NAME_MANGLE)
+  F90FLAGS = $(F90_PROF_OPT) $(F90_NAME_MANGLE)
+  CFLAGS   = $(C_PROF_OPT)
+  CXXFLAGS = $(CXX_PROF_OPT) 
+
+  ifeq ($(CLEVEL),opt)
+    ifndef TUNE
+      TUNE = -xtarget=native
+    endif
+    FFLAGS   += $(FINC) -dalign -O3 -xlibmil $(TUNE)
+    F90FLAGS += $(FINC) -dalign -O3 -xlibmil $(TUNE)
+    CFLAGS   += $(CINC) -O3
+    CXXFLAGS += $(CINC) -O3
+  else
+    ifndef TUNE
+      TUNE = -xtarget=generic
+    endif
+    FFLAGS   += $(FINC) -dalign -C -g $(TUNE)
+    F90FLAGS += $(FINC) -dalign -C -g $(TUNE)
+    CFLAGS   += $(CINC) -g
+    CXXFLAGS += $(CINC) -g
+  endif
+
+  # >>>>>>>>>>>>>>>>>>>>> SUN: MPI <<<<<<<<<<<<<<<<<<<
+  ifeq ($(MPI),yes)
+
+    # =====================
+    #  Compiler:	
+    # =====================
+
+    ifeq ($(MPI_DIST),mpich)
+
+      FC  = mpif77
+      F90 = mpif90 
+      CC  = mpicc
+      CXX = mpiCC
+
+    else
+    ifeq ($(MPI_DIST),lampi)
+
+      FC  = f77
+      F90 = f90
+      CC  = cc
+      CXX = CC
+
+      FFLAGS   += $(MPI_COMPILE_FLAGS)
+      F90FLAGS += $(MPI_COMPILE_FLAGS)
+      CFLAGS   += $(MPI_COMPILE_FLAGS)
+      CXXFLAGS += $(MPI_COMPILE_FLAGS)
+
+    endif
+    endif
+
+  # >>>>>>>>>>>>>>>>>>>>> SUN: SERIAL <<<<<<<<<<<<<<<<
+  else
+
+    # =====================
+    #  Compiler:
+    # =====================
+
+    FC  = f77
+    F90 = f90
+    CC  = cc 
+    CXX	= CC
+
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS = 
+
+  ifeq ($(STATIC_LIBS),yes) 
+    LD_STATIC = -Bstatic
+  else
+    LD_STATIC =
+  endif
+
+  F77_LD = $(FC)
+  F77_LFLAGS = $(LD_STATIC)
+
+  F90_LD = $(F90) $(FINC)
+  F90_LFLAGS = $(LD_STATIC)
+
+  CC_LD = $(CC)
+  CC_LFLAGS = 
+
+  CXX_LD = $(CXX)
+  CXX_LFLAGS = 
+
+  # ======================
+  #  F90 module path:
+  # ======================
+
+  MPOPT = -M
+
+  # ======================
+  #  F90 module names:
+  # ======================
+
+  F90_MOD_MANGLE = upper
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+  # ======================
+  #  System libraries:
+  # ======================
+
+  SYSLIBS =
+
+else
+# >>>>>>>>>>>>>>>>>>>>> ELSE IF: GNU GCC 3.x OPTIONS  <<<<<<<<<<<<<<<<<
+ifeq ($(COMPILER),gnu)
+ifeq ($(GCC_VER),3)
+
+  #
+  # Specify Fortran NameMangling__ 
+  #
+  ifndef FC_NAME_MANGLE
+    FC_NAME_MANGLE=double
+  endif
+
+  ifeq ($(FC_NAME_MANGLE),double)
+    F77_NAME_MANGLE =
+  else	
+  ifeq ($(FC_NAME_MANGLE),single)
+    F77_NAME_MANGLE = --no-second-underscore
+  endif
+  endif
+
+  ifeq ($(PROFILE),yes)
+    F77_PROF_OPT = -pg
+    C_PROF_OPT   = -pg
+    CXX_PROF_OPT = -pg
+  else	
+    F77_PROF_OPT = 
+    C_PROF_OPT   = 
+    CXX_PROF_OPT = 
+  endif
+
+  FFLAGS   = $(F77_PROF_OPT) $(F77_NAME_MANGLE)
+  CFLAGS   = $(C_PROF_OPT)
+  CXXFLAGS = $(CXX_PROF_OPT) 
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  ifeq ($(CLEVEL),opt)
+    FFLAGS   += $(FINC) -Wall -O3
+    CFLAGS   += $(CINC) -Wall -O3
+    CXXFLAGS += $(CINC) -Wall -O3
+  else
+    FFLAGS   += $(FINC) -Wall -g
+    CFLAGS   += $(CINC) -Wall -g
+    CXXFLAGS += $(CINC) -Wall -g
+  endif
+
+  # =====================
+  #  COMPILER:
+  # =====================
+
+  ifeq ($(MPI),yes)
+
+    ifeq ($(MPI_DIST),mpich)
+
+      FC  = mpif77
+      CC  = mpicc
+      CXX = mpiCC
+
+    else
+    ifeq ($(MPI_DIST),lampi)
+
+      FC  = g77
+      F90 = gcc
+      CC  = g++
+
+      FFLAGS   += $(MPI_COMPILE_FLAGS)
+      CFLAGS   += $(MPI_COMPILE_FLAGS)
+      CXXFLAGS += $(MPI_COMPILE_FLAGS)
+
+    endif
+    endif
+
+  else
+
+    FC  = g77
+    CC  = gcc 
+    CXX = g++
+
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS = 
+
+  ifeq ($(STATIC_LIBS),yes) 
+    LD_STATIC = -Bstatic
+  else
+    LD_STATIC =
+  endif
+
+  F77_LD = $(FC)
+  F77_LFLAGS = $(LD_STATIC)
+
+  CC_LD     = $(CC)
+  CC_LFLAGS = 
+
+  CXX_LD     = $(CXX)
+  CXX_LFLAGS = 
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+  # ======================
+  #  System libraries:
+  # ======================
+
+  SYSLIBS = 
+
+  ifeq ($(MPI_DIST),lampi)
+     SYSLIBS += $(MPI_LD_FLAGS) $(LLOPT)mpi
+  endif
+
+else
+# >>>>>>>>>>>>>>>>>>>>> ELSE IF: GNU GCC 4.x OPTIONS  <<<<<<<<<<<<<<<<<
+ifeq ($(GCC_VER),4)
+
+  #
+  # Specify Fortran NameMangling__ 
+  #
+  ifndef FC_NAME_MANGLE
+    FC_NAME_MANGLE=single
+  endif
+
+  ifeq ($(FC_NAME_MANGLE),double)
+    F77_NAME_MANGLE = -fsecond-underscore
+    F90_NAME_MANGLE = -fsecond-underscore
+  else	
+  ifeq ($(FC_NAME_MANGLE),single)
+    F77_NAME_MANGLE =
+    F90_NAME_MANGLE =
+  else
+    F77_NAME_MANGLE = -fno-underscoring
+    F90_NAME_MANGLE = -fno-underscoring
+  endif
+  endif
+
+  ifeq ($(PROFILE),yes)
+    F77_PROF_OPT = -pg
+    F90_PROF_OPT = -pg
+    C_PROF_OPT   = -pg
+    CXX_PROF_OPT = -pg
+  else	
+    F77_PROF_OPT = 
+    F90_PROF_OPT = 
+    C_PROF_OPT   = 
+    CXX_PROF_OPT = 
+  endif
+
+  FFLAGS   = $(F77_PROF_OPT) $(F77_NAME_MANGLE)
+  F90FLAGS = $(F90_PROF_OPT) $(F90_NAME_MANGLE)
+  CFLAGS   = $(C_PROF_OPT)
+  CXXFLAGS = $(CXX_PROF_OPT) 
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  #  turn off -Wunused-labels for now.
+  ifeq ($(CLEVEL),opt)
+    FFLAGS   += $(FINC) -Waliasing -Wsurprising -O3
+    F90FLAGS += $(FINC) -Waliasing -Wsurprising -O3
+    CFLAGS   += $(CINC) -Wall -O3
+    CXXFLAGS += $(CINC) -Wall -O3
+  else
+    # -fbounds-check (hmm?)
+    FFLAGS   += $(FINC) -Waliasing -Wsurprising -g
+    F90FLAGS += $(FINC) -Waliasing -Wsurprising -g
+    CFLAGS   += $(CINC) -Wall -g
+    CXXFLAGS += $(CINC) -Wall -g
+  endif
+
+  # =====================
+  #  COMPILER:
+  # =====================
+
+  ifeq ($(MPI),yes)
+
+    ifeq ($(MPI_DIST),mpich)
+
+      FC  = mpif77
+      F90 = mpif90 
+      CC  = mpicc
+      CXX = mpiCC
+
+    else
+    ifeq ($(MPI_DIST),lampi)
+
+      FC  = gfortran
+      F90 = gfortran
+      CC  = gcc
+      CXX = g++
+
+      FFLAGS   += $(MPI_COMPILE_FLAGS)
+      F90FLAGS += $(MPI_COMPILE_FLAGS)
+      CFLAGS   += $(MPI_COMPILE_FLAGS)
+      CXXFLAGS += $(MPI_COMPILE_FLAGS)
+
+    endif
+    endif
+
+  else
+
+    FC  = gfortran
+    F90 = gfortran
+    CC  = gcc 
+    CXX = g++
+
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS =
+
+  ifeq ($(STATIC_LIBS),yes) 
+    LD_STATIC = -static
+  else
+    LD_STATIC =
+  endif
+
+  F77_LD = $(FC)
+  F77_LFLAGS = $(LD_STATIC)
+
+  F90_LD = $(F90)
+  F90_LFLAGS = $(LD_STATIC)
+
+  CC_LD = $(CC)
+  CC_LFLAGS =
+
+  CXX_LD = $(CXX)
+  CXX_LFLAGS =
+
+  # ======================
+  #  F90 modules path:
+  # ======================
+
+  MPOPT = -M
+
+  # ======================
+  #  MOD case
+  # ======================
+
+  F90_MOD_MANGLE = lower
+
+  # ======================
+  #  F90 move modules
+  # ======================
+
+  MODMV = no
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+  # ======================
+  #  System libraries:
+  # ======================
+
+  SYSLIBS =
+
+  ifeq ($(MPI_DIST),lampi)
+     SYSLIBS += $(MPI_LD_FLAGS) $(LLOPT)mpi
+  endif
+
+endif
+endif
+endif
+endif
+
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ENDIF <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# ======================
+#  Archiver:
+# ======================
+
+AR = ar
+AFLAGS =csrv 
+
+RANLIB = ranlib
+
+# ======================
+#  Make
+# ======================
+
+MFLAGS = --no-print-directory
+MAKE = make
+
+# ======================
+#  Tools: 
+# ======================
+
+MV = /bin/mv 
+RM = /bin/rm
+CP = /bin/cp
+CD = cd
+
+MKDIR = /bin/mkdir
+
+CHMOD = /bin/chmod
+CHGRP = /bin/chgrp
+
+# ===========================================================
+

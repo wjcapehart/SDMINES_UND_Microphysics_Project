@@ -1,0 +1,379 @@
+===============================================================================
+INSTALL           Parallel Black Box Multigrid     boxmg4wrf-0.1 (2015/04/30)
+===============================================================================
+
+Installing Parallel Black Box Multigrid:
+========================================
+
+Installing Black Box Multigrid is, hopefully, an easy process.  There
+are only a few simple steps.
+
+    1)  Make sure you have the appropriate software already installed
+        on your system
+
+        - GNU make (version 3.79.1 or higher)
+        - GNU tar  (or gzip and any tar)
+        - a Fortran 77 compiler (serial and MPI)
+
+    2)  unpack the distribution
+        
+        - boxmg4wrf-0.1.tgz
+
+        with GNU tar (or gzip and any tar)
+
+    3)  check that the environment variables are set (see below)
+
+    4)  use make to build, and install the libraries, e.g.,
+
+        libboxmg_bug.a
+        libboxmg-extras_bug.a
+        
+==============================================================================
+
+========================
+1. Necessary Software:
+========================
+
+GNU tar and gzip:
+-----------------
+
+  The package comes as a gzipped tar ball.  With the command line 
+option "z" GNU tar will decompress the file before executing the
+other commands you specify.  These may be downloaded
+
+   ftp://prep.ai.mit.edu/gzip-1.2.4.tar
+   ftp://prep.ai.mit.edu/tar-1.12.tar.gz
+
+If you don't have and (don't want to install) GNU tar this may or 
+may not be the case, so just decompress the file manually first 
+(gzip -d filename).
+
+GNU make:
+---------
+
+  The make files use includes and conditionals to accommodate different
+architectures (see environment variables).  These features are not
+present (or consistent) across the flavors of make.  Consequently, we
+use GNU make which is readily available as
+
+   ftp://prep.ai.mit.edu/pub/gnu/make-3.79.1.tar.gz
+
+(more recent versions may be available you should check)
+and should be easily compiled and installed (even by a user in their
+own space for their own use). 
+
+
+Compilers:
+-----------
+
+  You need to have a Fortran 77 compiler (for Black Box Multigrid) and
+a c compiler for MPI (see below).  If you don't have these compilers
+on your system, I recommend the version 3.3.x or better of the GNU
+gcc/g77/g++.  This is available from GNU,
+
+  http://gcc.gnu.org/
+
+all the information you need is there.  This is known to compile
+and work on an incredible number of platforms.
+
+NOTE: the default compiler is the gnu compiler, g77.  However, the ARCH
+      files (see section below "ARCH FILES AND ENVIRONMENT VARIABLES") 
+      also contain the relevant variable settings for common vendor 
+      compilers.  
+
+NOTE: Support and testing for GCC 4.x (gnufortran, and g95 compilers)
+      will be added in the next release.
+
+Message Passing Interface (MPI):
+---------------------------------
+
+   You need to have an MPI implementation installed on your system.
+If you don't have these libraries and the accompanying scripts, such
+as mpif77, you can obtain the free reference implementation from
+
+  http://www.open-mpi.org
+
+all the information you need is there. The default value of BOXMG_MPI_DIST
+is 'mpich' which is also good for Openmpi (i.e., any MPI that uses the names 
+mpif77, mpif90, mpicc, etc., for the compilers).
+
+=========================================================================
+
+================================
+2. UNPACKING THE DISTRIBUTION:
+================================
+
+The distribution is contained in a single tar ball,
+
+    boxmg4wrf-0.1.tgz
+ 
+Move these files to a suitable place and enter
+
+    tar xvfz boxmg4wrf-0.1.tgz
+
+This will unpack the distribution into the subdirectory
+
+    $(PWD)/boxmg4wrf-0.1
+
+where $(PWD) is your present working directory.
+
+===============================================================================
+
+==========================================
+3. ARCH FILES and ENVIRONMENT VARIABLES:
+==========================================
+
+To accomodate different architectures in a relatively painless 
+manner we make use of some environment variables.  Specifically,
+we identify the appropriate compiler and linker information 
+files by reference to the machine architecture.  Therefore it is 
+a good idea to set the following environment variables
+
+   BOXMG_OS    - Operating system 
+                 (e.g., uname -s gives Linux, SunOS, IRIX64, Darwin )
+   BOXMG_CPU   - CPU or board type
+                 (e.g., uname -m implies intel, alpha, sparc, mips, X86_64 )
+
+Note that if you do not set these variables the make file will 
+attempt to set appropriate values based on information from the 
+system utility "uname".
+
+To see the default (or guessed) settings, use the command "make env" 
+in the top directory of BoxMG.
+
+If your shell is "csh" or "tcsh" use commands such as
+
+   setenv BOXMG_CLEVEL opt
+   setenv BOXMG_COMPILER intel
+   setenv BOXMG_ARCH Linux-intel
+
+To make these available in all of your loggin shells put the
+above lines in your .cshrc file.
+
+Similarly for "sh" or "bash" use commands such as 
+
+   export BOXMG_CLEVEL=opt
+   export BOXMG_COMPILER=intel
+   export BOXMG_ARCH=Linux-intel
+
+
+To make these available in all your loggin shells put the above
+lines in either your startup files (e.g., .profile, .bashrc, or .cshrc)
+
+----------------------------
+3.1  Compilers:
+----------------------------
+
+For simplicity and consistency we use the GNU compiler, g77 as
+the default compiler.  This is controlled by the environment
+variable "BOXMG_COMPILER".  For example to use the Portland group (pgf) compilers
+on Alpha/Linux with csh, or tcsh simply enter
+
+   setenv BOXMG_COMPILER portland
+
+The current list of tested compilers is summarized in this table.
+
+  System          COMPILERS         Vendor Information         Binary 
+
+  Linux-Intel       intel         Intel Fortran Compiler 9.0*   ifort
+                    gnu           GNU (3.x series)              g77
+                    gnu           GNU (4.x series)              gfortran
+                    absoft (not tested)        Absoft ProFortran 8.2-1       f77
+
+  Linux-AMD         portland      Portland Group Server 5.1-2   pgf77
+                    
+  OS X              intel         Intel Fortran                 ifort
+  
+  CRAY             Not supported
+  
+The version numbers indicate the version of the compiler that is
+installed on our development/testing machines.  It is reasonable to
+expect the code to run with newer versions of the compilers as well.
+
+* Previously, BoxMG was tested with the Intel version 8.x series of
+  compilers, but the name mangling options were improved in the 9.x 
+  series. If you need to run with the older series, you cannot override 
+  the namemangling option with FC_NAME_MANGLE=double.  You may also
+  need to change the warning options regarding line truncation, this
+  is an artifact of having headers that work with both the f77 and f90
+  language specs (continuation character location is different).
+----------------------------
+3.1.1  Float precision:
+----------------------------
+
+The environment variable BOXMG_PRECISION must be set to DOUBLE if 
+double-precision (64-bit) real numbers are to be used. Otherwise single
+precision (32-bit) is assumed.
+
+----------------------------
+3.2  Optimization:
+----------------------------
+
+The ARCH files allow you to toggle between debugging and optimized 
+compilation with the environment variable CLEVEL. For example, use 
+
+   setenv BOXMG_CLEVEL opt
+
+to select optimized compilation (the other option is "bug" for debugging).
+The library which is created is given the name
+
+   libboxmg_$(BOXMG_CLEVEL).a
+
+so you can keep both versions around if you like.  In my opinion,
+this is a very handy feature.
+
+NB: If you plan on using a vendor optimized version of LAPACK, 
+    then refer to Section 4.4 below.
+
+===============================================================================
+
+===========================
+4. BUILDING AND TESTING
+===========================
+
+----------------
+4.1 Makefiles:
+----------------
+
+To prepare for building and testing we first address the Makefiles.  
+The Makefiles automatically include the file 
+
+   ./ARCH/ARCH.$(BOXMG_OS)-$(BOXMG_CPU)
+  
+Check that the appropriate file exists and that it has been modified
+appropriately for your system.
+
+----------------
+4.2 Building:
+----------------
+
+First ensure that your present work directory (queried with the 
+command pwd) is the at the top level of the boxmg distribution. 
+Probably you will need to change directories 
+
+  cd /somehugepath/boxmg-mpi
+
+Now we will proceed to build the boxmg-mpi library as well as the
+boxmg-extras-mpi library by typing 
+
+  make 
+
+It is worth noting that you can override the environment variables
+on the command line.  For example, if you wanted to compile using
+the Absoft compiler with optimization you could build these libraries
+with the command
+
+  make BOXMG_COMPILER=absoft BOXMG_CLEVEL=opt
+
+(NOTE: There is no 'make install' step, so the libaries are considered to 
+be installed in the 'lib' subdirectory. In other words, the target library
+directory is always './lib')
+
+----------------
+4.3 TESTING:
+----------------
+
+There are few 2D and 3D tests included.  However, these are not 
+executed automatically by make. Instead you'll need to go to a 
+particular test, build it and then run it with the appropriate 
+options for your architecture.  For example, 
+
+ /somehugepath/boxmg-mpi/tests/boxmg-sym-std-2D
+
+has the subdirectories, 
+
+  ex_direct_1
+  ex_direct_1_Q
+  ex_direct_1_f90
+  ex_direct_pcg
+
+which contain variations of the same basic 5-point Finite Difference
+example. The binaries have the same name as the subdirectory
+and are most commonly run with the mpirun script (or similar),
+e.g., 
+
+  mpirun -np 4 -nolocal -machinefile SOMEFILE ex_direct_1
+
+---------------------------
+4.4  Excluding Components:
+---------------------------
+
+If you plan on using a vendor optimized version of LAPACK, you
+may wish to exclude this from the boxmg-extras library (i.e., to 
+avoid mixups in the linking phase).  This is easily accomplished
+by passing arguments to make,
+
+  make LAPACK=no
+
+By default all components are included in the library.
+
+---------------------------
+4.5  Installing:
+---------------------------
+
+For now, if you need to put it somewhere, then use your favorite move
+command.  
+
+===========================
+5. The Extras:
+===========================
+
+The extras subdirectory includes routines from MSG2.0, see
+
+    http://www.netlib.org/mpi/contrib/MSG.tgz
+
+This package contains routines that simplify the communication for
+distributed logically rectangular meshes.  In addition, it includes
+routines from BLAS and LAPACK, as well as a few routines from the
+SLATEC library.  These routines are freely available from netlib
+
+  http://www.netlib.org
+
+and have been included for your convenience. Finally, we have also
+included a serial version of BoxMG to handle the coarse-grid
+solves.  This is a postprocessed version to avoid name-space conflicts
+and the inability of Fortran77 to use recursion.  If you really need 
+a serial version, then please download the supported serial version 
+separately.  A machine-dependent timing routine (i.e., wrapper) 
+is included, BMG_timer, for internal BoxMG timing calls.
+
+===========================
+6. Known Problems:
+===========================
+
+Here's a list of issues that are known, please send the maintainers
+any additional information if you encounter new or related problems.
+
+* BoxMG 2D 
+
+  - Line-relaxation with a 1x2 processor grid decomposition fails.
+    (2x1, or Nx1 is okay). 
+
+  - The code does not run on a single processor.  If you need this
+    feature let us know, this shouldn't be too hard to fix.
+
+  - We need real examples and additional documentation.  For now
+    the best examples are ex_dircect_1_Q, and ex_direct_pcg.
+
+* BoxMG 3D
+
+  - Plane relaxation has not been implemented.
+
+  - The code does not run on a single processor.  If you need this
+    feature let us know, this shouldn't be too hard to fix.
+
+  - No testing with less than 4 processors. Processor grids of
+    2x2x1 have been used in the past, I believe they still work.
+    Please report errors or success if you run on other 1 or 2
+    dimensional processor grids (e.g., Nx1x1).
+
+  - We need real examples and additional documentation.  For now
+    the tests in tests/boxmg-sym-std-3D provide examples for 
+    Fortran77 (ex_direct_1, ex_direct_pcg), and Fortran90 with
+    dynamic memory allocation (ex_direct_1_f90, ex_direct_pcg_f90).
+
+===============================================================================
+
+
+
+

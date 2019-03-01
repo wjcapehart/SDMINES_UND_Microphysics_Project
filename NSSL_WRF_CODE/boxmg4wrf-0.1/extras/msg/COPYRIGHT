@@ -1,0 +1,18 @@
+The code in the src, include, and examples/jacobi directories is
+covered by the following copyright notice:
+
+Copyright 1997 by Andrei Malevsky. Permission to use, 
+copy, modify and sell this program for any purpose is 
+hereby granted without fee, provided that this copyright 
+notice appear in all copies and that both that copyright 
+notice and this permission notice appear in supporting 
+documentation, and the author's name not be used in 
+advertising or publicity pertaining to distribution of the 
+software without specific written prior permision. If the 
+program is included in a book, publication or software 
+distribution media for sale, the author must be notified 
+about it. 
+
+All other code in this directory is covered by the LGPL copyright
+notice contained in the LICENSE and COPYRIGHT files in the top-level
+boxmg-mpi directory.

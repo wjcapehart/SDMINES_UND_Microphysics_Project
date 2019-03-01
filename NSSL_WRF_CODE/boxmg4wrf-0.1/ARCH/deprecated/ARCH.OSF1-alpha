@@ -1,0 +1,303 @@
+# ============================================================================
+#
+#  Makefile Defaults:  OSF1 - alpha
+#
+# =======================================================================
+# $license_flag$
+# =======================================================================
+# --------------------------
+#  Generic Compiler Notes:
+# --------------------------
+#
+#    **NOTE: For MPI code any Name Mangling compatibility options should 
+#            already be included in the mpif77/mpicc scripts. So it is
+#            to aid in resolving problems with inconsistent installations,
+#            MPI distributions that don't provide compiler scripts, and
+#            serial components of the code.
+#
+# ============================================================================
+
+# >>>>>>>>>>>>>>>>>>>>> SET: DEC COMPILER OPTIONS <<<<<<<<<<<<<<<<<<<<<<<
+ifeq ($(COMPILER),dec)
+
+  # >>>>>>>>>>>>>>>>>>>>> DEC/HP: MPI <<<<<<<<<<<<<<<<<<<
+  ifeq ($(MPI),yes)
+
+    # =====================
+    #  Compiler:
+    # =====================
+
+    FC   = f77
+    F90  = f90
+    CC   = cc 
+
+    # =====================
+    #  Flags:
+    # =====================
+
+    ifndef F77_NAME_MANGEL
+      F77_NAME_MANGLE =
+    endif 
+    ifndef F90_NAME_MANGEL
+      F90_NAME_MANGLE =
+    endif
+
+    ifeq ($(CLEVEL),opt)
+      ifndef TUNE
+        TUNE = -arch host -tune host
+      endif
+      FFLAGS    = $(FINC) $(MPI_COMPILE_FLAGS) $(F77_NAME_MANGLE)
+      FFLAGS   += $(TUNE) -O3 -pipeline -align dcommons
+      F90FLAGS  = $(FINC) $(MPI_COMPILE_FLAGS) $(F90_NAME_MANGLE)
+      F90FLAGS += $(TUNE) -O3 -pipeline -align dcommons  
+      CFLAGS    = 
+    else
+    ifeq ($(CLEVEL),vampir)
+      ifndef TUNE
+        TUNE = -arch host -tune host
+      endif
+      FFLAGS    = $(FINC) $(MPI_COMPILE_FLAGS) $(F77_NAME_MANGLE)
+      FFLAGS   += $(TUNE) -O3 -pipeline -align dcommons
+      F90FLAGS  = $(FINC) $(MPI_COMPILE_FLAGS) $(F90_NAME_MANGLE)
+      F90FLAGS += $(TUNE) -O3 -pipeline -align dcommons  
+      CFLAGS    = 
+    else
+      ifndef TUNE
+        TUNE = -arch generic -tune generic
+      endif 
+      FFLAGS    = $(FINC) $(MPI_COMPILE_FLAGS) $(F77_NAME_MANGLE)
+      FFLAGS   += $(TUNE) -g2 -C -ladebug
+      F90FLAGS  = $(FINC) $(MPI_COMPILE_FLAGS) $(F90_NAME_MANGLE)
+      F90FLAGS += $(TUNE) -g2 -C -ladebug
+      CFLAGS    = 
+    endif
+    endif
+
+    # =====================
+    #  Linker:
+    # =====================
+
+    LD = ld
+    LFLAGS = 
+
+    F77_LD = $(FC)
+    F77_LFLAGS = $(MPI_LD_FLAGS)
+
+    F90_LD = $(F90)
+    F90_LFLAGS = $(MPI_LD_FLAGS)
+
+    CC_LD = $(CC)
+    CC_LFLAGS = $(MPI_LD_FLAGS)
+
+    # ======================
+    #  Library search path:
+    # ======================
+
+    LPOPT = -L
+
+    # ======================
+    #  Library option:
+    # ======================
+
+    LLOPT = -l
+
+    # ======================
+    #  System libraries:
+    # ======================
+
+    ifeq ($(CLEVEL),vampir)
+      MPI_SYSLIBS  = -L${VGV_HOME}/lib -$(LLOPT)VT -$(LLOPT)mld 
+      MPI_SYSLIBS += $(MPI_LD_FLAGS) $(LLOPT)fmpi $(LLOPT)mpi $(LLOPT)elan
+      MPI_SYSLIBS += -$(LLOPT)pmpi $(LLOPT)exc -$(LLOPT)m -$(LLOPT)pthread
+    else
+      MPI_SYSLIBS = $(MPI_LD_FLAGS) $(LLOPT)fmpi $(LLOPT)mpi $(LLOPT)elan
+    endif
+
+    ifeq ($(TUNED_MATH),yes)
+      MATHLIBS = -ldxml
+      SYSLIBS  = $(MPI_SYSLIBS)
+    else
+      MATHLIBS = 
+      SYSLIBS  = $(MPI_SYSLIBS)
+    endif
+
+  # >>>>>>>>>>>>>>>>>>>>> DEC/HP: SERIAL <<<<<<<<<<<<<<<<
+  else
+
+    # =====================
+    #  Compiler:
+    # =====================
+
+    FC   = f77
+    F90  = f90
+    CC   = cc 
+
+    # =====================
+    #  Flags:
+    # =====================
+
+    ifndef F77_NAME_MANGEL
+      F77_NAME_MANGLE =
+    endif 
+    ifndef F90_NAME_MANGEL
+      F90_NAME_MANGLE =
+    endif
+
+    ifeq ($(CLEVEL),opt)
+      ifndef TUNE
+        TUNE = -arch host -tune host
+      endif
+      FFLAGS    = $(FINC) $(F77_NAME_MANGLE)
+      FFLAGS   += $(TUNE) -O3 -pipeline -align dcommons
+      F90FLAGS  = $(FINC) $(F90_NAME_MANGLE)
+      F90FLAGS += $(TUNE) -O3 -pipeline -align dcommons  
+      CFLAGS    = 
+    else
+    ifeq ($(CLEVEL),vampir)
+      ifndef TUNE
+        TUNE = -arch host -tune host
+      endif
+      FFLAGS    = $(FINC) $(F77_NAME_MANGLE)
+      FFLAGS   += $(TUNE) -O3 -pipeline -align dcommons
+      F90FLAGS  = $(FINC) $(F90_NAME_MANGLE)
+      F90FLAGS += $(TUNE) -O3 -pipeline -align dcommons  
+      CFLAGS    = 
+    else
+      ifndef TUNE
+        TUNE = -arch generic -tune generic
+      endif 
+      FFLAGS    = $(FINC) $(F77_NAME_MANGLE)
+      FFLAGS   += $(TUNE) -g2 -C -ladebug
+      F90FLAGS  = $(FINC) $(F90_NAME_MANGLE)
+      F90FLAGS += $(TUNE) -g2 -C -ladebug
+      CFLAGS    = 
+    endif
+    endif
+
+    # =====================
+    #  Linker:
+    # =====================
+
+    LD = ld
+    LFLAGS = 
+
+    F77_LD = $(FC)
+    F77_LFLAGS = 
+
+    F90_LD = $(F90)
+    F90_LFLAGS = 
+
+    CC_LD = $(CC)
+    CC_LFLAGS = 
+
+    # ======================
+    #  Library search path:
+    # ======================
+
+    LPOPT = -L
+
+    # ======================
+    #  Library option:
+    # ======================
+
+    LLOPT = -l
+
+    # ======================
+    #  System libraries:
+    # ======================
+
+    ifeq ($(TUNED_MATH),yes)
+      MATHLIBS = $(LLOPT)dxml
+      SYSLIBS  =
+    else
+      MATHLIBS = 
+      SYSLIBS  =
+    endif
+
+  endif
+
+# >>>>>>>>>>>>>>>>>>>>>>> ELSE: GNU COMPILERS <<<<<<<<<<<<<<<<<<<<<<<<<
+else
+
+  # =====================
+  #  Compiler:
+  # =====================
+
+  FC = g77 
+  CC = gcc 
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  ifeq ($(CLEVEL),opt)
+    FFLAGS = $(FINC) -Wall -O3
+    CFLAGS = -Wall -O3
+  else
+    FFLAGS = $(FINC) -Wall -g
+    CFLAGS = -Wall -g
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS = 
+
+  F77_LD = g77
+  F77_LFLAGS = 
+
+  CC_LD = gcc
+  CC_LFLAGS = 
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+endif
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ENDIF <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+# ======================
+#  Archiver:
+# ======================
+
+AR = ar
+ARFLAGS =csrv 
+
+RANLIB = ranlib
+
+# ======================
+#  Make
+# ======================
+
+MFLAGS = --no-print-directory
+MAKE = make
+
+# ======================
+#  Tools: 
+# ======================
+
+MV = /bin/mv 
+RM = /bin/rm
+CP = /bin/cp
+CD = cd
+
+MKDIR = /bin/mkdir
+
+CHMOD = /bin/chmod
+CHGRP = /bin/chgrp
+
+# ===========================================================
+
+
+

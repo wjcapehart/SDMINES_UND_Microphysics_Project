@@ -1,0 +1,166 @@
+# ============================================================================
+#
+#  Makefile Defaults:  SunOS - sparc
+#
+# =======================================================================
+# $license_flag$
+# =======================================================================
+# --------------------------
+#  Generic Compiler Notes:
+# --------------------------
+#
+#    **NOTE: For MPI code any Name Mangling compatibility options should 
+#            already be included in the mpif77/mpicc scripts. So it is
+#            to aid in resolving problems with inconsistent installations,
+#            MPI distributions that don't provide compiler scripts, and
+#            serial components of the code.
+#
+# ============================================================================
+
+# >>>>>>>>>>>>>>>>>>>>> Set: SUN COMPILER OPTIONS <<<<<<<<<<<<<<<<<<<<<
+ifeq ($(COMPILERS),sun) 
+
+# =====================
+#  Compiler:
+# =====================
+
+FC = f77
+CC = cc
+
+# =====================
+#  Flags:
+# =====================
+
+ifeq ($(CLEVEL),opt)
+  ifndef TUNE
+    TUNE = -xtarget=native
+  endif
+  FFLAGS = $(FINC) -dalign -O3 -xlibmil $(TUNE)
+  CFLAGS =
+else
+  ifndef TUNE
+    TUNE = -xtarget=generic
+  endif
+  FFLAGS = $(FINC) -C -g -dalign $(TUNE)
+  CFLAGS = 
+endif
+
+# =====================
+#  Linker:
+# =====================
+
+LD = ld
+LFLAGS = 
+
+F77_LD = f77
+F77_LFLAGS = 
+
+CC_LD = cc
+CC_LFLAGS = 
+
+# ======================
+#  Library search path:
+# ======================
+
+LPOPT = -L
+
+# ======================
+#  Library option:
+# ======================
+
+LLOPT = -l
+
+# ======================
+#  System libraries:
+# ======================
+
+ifeq ($(TUNED_MATH),yes)
+  MATHLIBS = -Bstatic -xlic_lib=sunperf -Bdynamic
+  SYSLIBS  = 
+else
+  MATHLIBS = 
+  SYSLIBS  = 
+endif
+
+# >>>>>>>>>>>>>>>>>>>>>>> ELSE: GNU COMPILERS <<<<<<<<<<<<<<<<<<<<<<<<<
+else
+
+# =====================
+#  Compiler:
+# =====================
+
+FC = g77 
+CC = gcc 
+
+# =====================
+#  Flags:
+# =====================
+
+ifeq ($(CLEVEL),opt)
+FFLAGS = $(FINC) -Wall -O3
+CFLAGS = -Wall -O3
+else
+FFLAGS = $(FINC) -Wall -g
+CFLAGS = -Wall -g
+endif
+
+# =====================
+#  Linker:
+# =====================
+
+LD = ld
+LFLAGS = 
+
+F77_LD = g77
+F77_LFLAGS = 
+
+CC_LD = gcc
+CC_LFLAGS = 
+
+# ======================
+#  Library search path:
+# ======================
+
+LPOPT = -L
+
+# ======================
+#  Library option:
+# ======================
+
+LLOPT = -l
+
+endif
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ENDIF <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# ======================
+#  Archiver:
+# ======================
+
+AR = ar
+AFLAGS =csrv 
+
+RANLIB = ranlib
+
+# ======================
+#  Make
+# ======================
+
+MFLAGS = --no-print-directory
+MAKE = make
+
+# ======================
+#  Tools: 
+# ======================
+
+MV = /bin/mv 
+RM = /bin/rm
+CP = /bin/cp
+CD = cd
+
+MKDIR = /bin/mkdir
+
+CHMOD = /bin/chmod
+CHGRP = /bin/chgrp
+
+# ===========================================================
+

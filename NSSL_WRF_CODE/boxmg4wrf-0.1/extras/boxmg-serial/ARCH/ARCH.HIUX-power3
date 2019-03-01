@@ -1,0 +1,142 @@
+# ============================================================================
+#
+#  Makefile Defaults:  HIUX - power3
+#
+# =======================================================================
+# $license_flag$
+# ============================================================================
+
+# >>>>>>>>>>>>>>>>>>>>> SET: NATIVE COMPILER OPTIONS <<<<<<<<<<<<<<<<<<<<<
+ifeq ($(COMPILER),f90) 
+
+  # =====================
+  #  Compiler:
+  # =====================
+
+  FC = f90
+  CC = cc 
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  ifeq ($(CLEVEL),opt)
+    FFLAGS = $(FINC) -hf77 -conti199 -Oss -nopar -model=F1 -s,INIT -verbose_loglist -pmfunc
+    CFLAGS = -Wall -O3
+  else
+    FFLAGS = $(FINC) -hf77 -conti199 -model=F1 -g
+    CFLAGS = -Wall -g
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS = 
+
+  F77_LD = f90
+  F77_LFLAGS = -noparallel -pmfunc
+
+  CC_LD = cc
+  CC_LFLAGS = 
+
+  SYSLIBS = -lf90c
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+# >>>>>>>>>>>>>>>>>>>>>>> ELSE: GNU COMPILERS <<<<<<<<<<<<<<<<<<<<<<<<<
+else
+
+  # =====================
+  #  Compiler:
+  # =====================
+
+  FC = g77 
+  CC = gcc 
+
+  # =====================
+  #  Flags:
+  # =====================
+
+  ifeq ($(CLEVEL),opt)
+    FFLAGS = $(FINC) -Wall -O3 -malign-double
+    CFLAGS = -Wall -O3
+  else
+    FFLAGS = $(FINC) -Wall -g -malign-double
+    CFLAGS = -Wall -g
+  endif
+
+  # =====================
+  #  Linker:
+  # =====================
+
+  LD = ld
+  LFLAGS = 
+
+  F77_LD = g77
+  F77_LFLAGS = 
+
+  CC_LD = gcc
+  CC_LFLAGS = 
+
+  # ======================
+  #  Library search path:
+  # ======================
+
+  LPOPT = -L
+
+  # ======================
+  #  Library option:
+  # ======================
+
+  LLOPT = -l
+
+endif
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ENDIF <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+# ======================
+#  Archiver:
+# ======================
+
+AR = ar
+ARFLAGS = csrv 
+
+RANLIB = ranlib
+
+# ======================
+#  Make
+# ======================
+
+MFLAGS = --no-print-directory
+MAKE = make
+
+# ======================
+#  Tools: 
+# ======================
+
+MV = /bin/mv 
+RM = /bin/rm
+CP = /bin/cp
+CD = cd
+
+MKDIR = /bin/mkdir
+
+CHMOD = /bin/chmod
+CHGRP = /bin/chgrp
+
+# ===========================================================
+
+
+

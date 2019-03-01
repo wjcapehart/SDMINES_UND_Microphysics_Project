@@ -1,0 +1,139 @@
+# ============================================================================
+#  
+#  BoxMG Build System:  "Guess" the MACHINE Type
+#
+# =======================================================================
+# $license_flag$
+# ============================================================================
+
+# -------------------------------------------------------
+#  Defaults for the MACHINE type are set if they aren't
+#  already defined in the users environment
+# -------------------------------------------------------
+
+ifndef BOXMG_OS
+  BOXMG_OS = $(shell uname -s)
+
+  ifeq ($(BOXMG_OS),HI-UX/MPP)
+    BOXMG_OS = HIUX
+  endif
+
+  ifeq ($(BOXMG_OS), Darwin)
+    BOXMG_OS = OSX
+  endif
+
+  ifeq ($(findstring CYGWIN,$(BOXMG_OS)),CYGWIN)
+    BOXMG_OS = CYGWIN
+  endif
+
+endif
+
+UNAME_M = $(shell uname -m)
+
+# -------------------------------------------------------
+
+# ---------
+#  COMPAQ
+# ---------
+
+ifeq (OSF1,$(BOXMG_OS))
+  BOXMG_CPU = alpha
+endif
+
+
+# ---------
+#  CYGWIN
+# ---------
+
+ifeq ($(BOXMG_OS),CYGWIN)
+
+  ifeq ($(findstring x86_64,$(UNAME_M)),x86_64)
+    BOXMG_CPU = AMD64
+  else
+  ifeq ($(findstring 86,$(UNAME_M)),86)   
+    BOXMG_CPU = intel
+  else
+  ifeq ($(findstring ia64,$(UNAME_M)),ia64)   
+    BOXMG_CPU = ia64
+  else 
+    # this is ok for alpha and sparc, but it's punting otherwise
+    BOXMG_CPU = $(UNAME_M)
+  endif
+  endif
+  endif
+
+endif
+
+# ----------
+# OSX Darwin
+# ----------
+
+ifeq ($(BOXMG_OS), OSX)
+   ifeq ($(findstring Power,$(UNAME_M)),Power)
+      BOXMG_CPU = Power
+   else
+   ifeq ($(findstring 86,$(UNAME_M)),86) 
+      BOXMG_CPU = intel
+   endif
+   endif
+endif
+
+# ---------
+#  LINUX
+# ---------
+
+ifeq ($(BOXMG_OS),Linux)
+
+  ifeq ($(findstring x86_64,$(UNAME_M)),x86_64)
+    BOXMG_CPU = AMD64
+  else
+  ifeq ($(findstring 86,$(UNAME_M)),86)   
+    BOXMG_CPU = intel
+  else
+  ifeq ($(findstring ia64,$(UNAME_M)),ia64)   
+    BOXMG_CPU = ia64
+  else 
+  ifeq ($(findstring ppc64,$(UNAME_M)),ppc64)   
+    BOXMG_CPU = powerpc
+  else 
+    # this is ok for alpha and sparc, but it's punting otherwise
+    BOXMG_CPU = $(UNAME_M)
+  endif
+  endif
+  endif
+  endif
+
+  ifndef BOXMG_CPUFAMILY
+    BOXMG_CPUTEMP=$(shell cat /proc/cpuinfo | grep name | sed -e '1 s/.*:/xy/' | grep xy)
+    ifeq ($(findstring Opteron,$(BOXMG_CPUTEMP)),Opteron)
+      BOXMG_CPUFAMILY=opteron
+    else
+    ifeq ($(findstring Athlon,$(BOXMG_CPUTEMP)),Athlon)
+      BOXMG_CPUFAMILY=athlon
+    else
+    ifeq ($(findstring Xeon,$(BOXMG_CPUTEMP)),Xeon)
+      BOXMG_CPUFAMILY=P4
+    else 
+      BOXMG_CPUFAMILY=PIII
+    endif
+    endif
+    endif
+  endif
+
+endif
+
+# -----------
+#  Solaris
+# -----------
+
+ifeq ($(BOXMG_OS),SunOS)
+  BOXMG_CPU = $(shell uname -p)
+endif
+
+# ---------------------------
+#  Set the machine name
+# ---------------------------
+
+BOXMG_ARCH = $(BOXMG_OS)-$(BOXMG_CPU)
+
+# ============================================================================

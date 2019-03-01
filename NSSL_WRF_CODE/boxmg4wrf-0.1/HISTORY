@@ -1,0 +1,132 @@
+===============================================================================
+HISTORY:                                           boxmg-mpi-0.5.0 (2006/07/12)
+===============================================================================
+
+boxmg-0.5.0 (2006/07/12)
+   - added copyright notice (COPYRIGHT) and LGPL license file (LICENSE).
+   - added support for Itanium (Linux-ia64) and Opteron (Linux-AMD64)
+     based machines.  
+   - fixed a bug in BMG2_SymStd_SOLVE_boxmg that left some dimensions 
+     uninitialized when skipping the setup (e.g., NBMG_iWORK_CS). 
+   - fixed a bug in the specification of the loop boundaries in
+     the copy of BBD -> Q for the case of NProcI=1 or NProcJ=1
+   - fixed a bug in (3D) ncycle (call to residual with args out of order)
+   - In BMG2_SymStd_SOLVE_pcg KF was uninitialized and is equivalent
+     to NOG in this case: KF->NOG in residual and matvec calls.
+
+**** Official COPYRIGHT and LGPL asserted on 2005/09/14 for
+     Black Box Multigrid-MPI (BoxMG-MPI), Version 0.5.0 (C-04,067)
+     (Classification Review #:LA-CC-04-070)
+
+boxmg-mpi-0.5.0-pre1 (2004/04/27)
+   - fixed the divide by zero issue in the calculation of the
+     relative residual in BMG2_*SOLVE_pcg and BMG2_*SOLVE_boxmg.
+   - reorganized the code to include boxmg-extras-mpi within the boxmg-mpi
+     package as the subdirectory extras.  This change is intended to 
+     make building boxmg more convenient for users, and it will make
+     the pending move to GNU Autotools much easier.
+   - added support for the Portland Group compilers
+   - updated the boxmg-serial distribution to version 1.6.4.
+   - updated the interpolation operators to be consistent with the
+     current serial distribution.
+   - resync'd parameter definitions with the serial.  In particular,
+     new options were added for the coarse-grid construction method
+     and for the coarse-grid operator type. (Note: the options don't
+     actual do anything yet).
+   - new error checking for 2D and 3D parallel.  This required 
+     changes to the *SETUP_PtrWork argument list.  There is still
+     more work required here, but at least the user can now check
+     the error code returned by BoxMG. 
+   - added the option to use the serial BoxMG code for the coarse-grid
+     solve in 2D (this was already supported in 3D).  This feature
+     required changes to BMG2_SymStd_SOLVE_boxmg argument list and
+     new input files for the tests.
+   - added the block-local construction option for constructing the
+     coarse-grid operators in 2D.
+   - a few improvements were made to the line relaxation:
+        * fixed a bug in the memory allocation
+        * fixed a bug in the computation of workspace pointers 
+          for the interface system (i.e., in BMG2_SymStd_LineSolve_B).
+        * fixed the level and processor dependent logic for the
+          red-black ordering of the line relaxation sweeps. This
+          ordering is consistent with the serial code.
+        * along the lines the communication is based on MPI_GATHER
+          and MPI_SCATTER, providing the update to ghost points.
+        * transverse to the lines the option is now available to
+	  choose the communication model based on either our standard
+	  MSG communication of all ghost cells, or the selective 
+          communication of only information that has changed.
+    - some miscellaneous internal cleanup and elmination of unused code.
+    - updated the two-dimensional tests (all run now) including
+      ex_direct_1_f90, which is taken directly from the Q-milestone.
+
+boxmg-mpi-0.4.0 (2003/09/26)
+   - both 2D and 3D codes run now, reproducing the serial results
+     in most examples (no plane relaxation in 3D).
+   - added the PCG routines for the 3D.
+   - completed transition to the BMG[23] namespace convention.
+   - added the option for either gather-scatter or allgather communication
+     with the coarse-grid solve (gather-scatter is the default).
+   - added the option to update the ghost unknowns for the initial
+     guess in BMG[23]_SymStd_SOLVE_boxmg
+   - eliminated communication in the setup of the MSG communicators.
+     (a level dependend number of allgathers) 
+   - switched BMG_timer calls to MPI_Wtime.
+   - added collection of verbose timing information and created
+     the BMG[23]_SymStd_OUTPUT_times subroutines.
+   - fixed the space estimate for NMSGr to eliminate Nproc**2 dependence.
+   - added the option of using the serial BoxMG as the coarse-grid
+     solver, instead of ILU (3D only).
+   - updated the main 3D examples, ex_direct_1 and ex_direct_pcg, to 
+     read data from the three files given in FileList*, which is
+     intended to be redirected from standard in.
+   - added BMG[23]_SymStd_SETUP_ProcGrid_file, which reads processor-grid
+     data from a file and then setups the BMG_MPI_iGRID data array.
+     Consistency required a number of interface changes, including the
+     main solver interface to BMG[23]_SymStd_SOLVE_boxmg.
+   - eliminated the misleading parameter MaxNumProc.
+   - standardized the meaning of MyProc and related variables throughout.
+     Default internal to boxmg is the MSG numbering (1,...,NProc), 
+     when ambiguity may exist we use either MPI_MyProc or MSG_MyProc.
+   - eliminated the post solve communication from BMG2_SymStd_SOLVE_cg.
+   - sync'd many updates in from the serial code, particuarly relating
+     to the 3D plane relaxation and the build system.
+   - improved flexibility of our MSG communication patterns to
+     accomodate the asymmetric and dual-grid patterns arising in the 
+     coarse-grid operator construction.
+   - fixed GS relaxation, which is now a true 8-color relaxation for
+     27-point operators (it was 4-color).
+   - added BMG[23]_SymStd_DUMP* routines for the stencil, restriction
+     and interpolation operators.  The option is included to examine
+     these operators interactively, or to dump this data to a file.
+
+boxmg-mpi-0.3.1 (2003/08/05) 
+   - updates to PCG routines and minor changes to this interface.
+   - fixed minor bug in workspace computation and added the option
+     to return the dimensions of the required workspace arrays.
+   - include files have been sync'd (as much as possible) with 
+     the serial version.  Also, dual continuation characters have
+     been added to make these files f90 compatible.
+   - a few name space improvements, but lots still left to do here.
+   - no measureable progress on 3D yet.
+
+boxmg-mpi-0.3.0 (2003/07/17)
+   - added PCG routines
+   - added examples: ex_direct_aniso, ex_direct_poission
+   - permit explicit workspace calculation in BMG2_SymStd_SETUP_PtrWork.f
+   - fixed issues with number of grids/levels = 1
+   - name space improvements, most notably boxmg -> BMG2_SymStd_SOLVE_boxmg
+     so users must update calls.  In addition X-line and Y-line
+     communicators were added to the argument list.
+   - development of 3D is ongoing, it's not working yet!
+
+boxmg-mpi-0.2.0 (2002/02/08)
+   - first signs of success: 2D with colored Gauss-Seidel relaxation works.
+   - a very limited test case resides in src/boxmg-sym-std-2D
+   - tests and 3D have not been updated
+
+boxmg-mpi-0.1.0 (2000/13/03)
+   - includes boxmg-1.4.0 (the serial version) and an example 
+     of a parallel preconditioned CG iteration that uses boxmg
+     locally as a preconditioner.
+

@@ -1,0 +1,301 @@
+# ============================================================================
+#  
+#  BoxMG Build System:  Compiler and optimization level default
+#
+# =======================================================================
+# $license_flag$
+# ============================================================================
+
+# ------------------------------------------------------
+#  Handy string splitting variables for GNU make
+# ------------------------------------------------------
+
+empty  =
+space  = $(empty) $(empty)
+period = .
+
+# ------------------------------------------------------
+#  Default to GNU compilers except on SGI and Hitachi!
+#  (GNU assembler problems on SGI make this a good idea)
+# ------------------------------------------------------
+
+ifndef BOXMG_COMPILER
+
+  ifeq ($(findstring IRIX,$(OS)),IRIX)
+      BOXMG_COMPILER=mipspro
+  else
+  ifeq ($(OS),HIUX)
+      BOXMG_COMPILER=f90
+  else
+      BOXMG_COMPILER=gnu
+  endif
+  endif
+
+endif
+
+# ------------------------------------------------------
+#  Default GNU/GCC version 
+# ------------------------------------------------------
+
+#ifneq (,$(filter $(BOXMG_COMPILER),gnu absoft))
+ifeq ($(BOXMG_COMPILER),gnu)
+  ifndef BOXMG_GCC_VER
+  ifeq ($(shell which gfortran 2>&1 | sed -e 's/.*\///'), gfortran)
+      BOXMG_GCC_VER=4
+      BOXMG_GNU_FC_MSG:=Found a GNU Fortran compiler from 4.x!
+    else
+    ifeq ($(shell which g77 2>&1 | sed -e 's/.*\///'), g77)
+      BOXMG_GCC_VER=3
+      BOXMG_GNU_FC_MSG:=Found a GNU Fortran compiler from 3.x!
+    else
+      BOXMG_GCC_VER=Unknown version of GNU compiler family!
+      BOXMG_GNU_FC_MSG:=Cannot find a GNU Fortran compiler!
+    endif
+    endif
+  endif
+endif
+
+# -------------------------------------------------------
+#  Collect detailed revision information on GNU
+# -------------------------------------------------------
+
+NF=not found
+
+ifeq ($(BOXMG_COMPILER),gnu)
+
+  VERSION_MAGIC:=sed -e 's/gcc version //' -e 's/\([0-9].[0-9].[0-9]\).*/\1/'
+
+  ifeq ($(BOXMG_GCC_VER),3)
+    ifndef BOXMG_GNU_FC
+      BOXMG_GNU_FC:=g77
+    endif
+    BOXMG_GNU_FC_VER:=$(shell $(BOXMG_GNU_FC) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+  else
+  ifeq ($(BOXMG_GCC_VER),4)
+    ifndef BOXMG_GNU_FC
+      BOXMG_GNU_FC:=gfortran
+    endif
+    BOXMG_GNU_FC_VER:=$(shell $(BOXMG_GNU_FC) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+  endif
+  endif
+  BOXMG_GNU_FC_MAJOR:=$(word 1,$(subst $(period),$(space),$(BOXMG_GNU_FC_VER)))
+  BOXMG_GNU_FC_MINOR:=$(word 2,$(subst $(period),$(space),$(BOXMG_GNU_FC_VER)))
+  BOXMG_GNU_FC_MICRO:=$(word 3,$(subst $(period),$(space),$(BOXMG_GNU_FC_VER)))
+
+  #
+  #  Search for a matching version of gcc for compiling/linking C.
+  # 
+  BOXMG_GNU_CC_MSG:=Found a matching version of gcc!
+  BOXMG_GNU_CC_VER:=$(shell gcc -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+  ifeq ($(BOXMG_GNU_CC_VER),$(BOXMG_GNU_FC_VER))
+    BOXMG_GNU_CC:=gcc
+  else
+    CC_TEST:=gcc-$(BOXMG_GNU_FC_MAJOR)
+    ifeq ($(findstring $(NF),$(shell $(CC_TEST) -v 2>&1 | tail -n 1)),$(NF))
+      CC_TEST:=gcc-$(BOXMG_GNU_FC_MAJOR).$(BOXMG_GNU_FC_MINOR)
+      ifeq ($(findstring $(NF),$(shell $(CC_TEST) -v 2>&1 | tail -n 1)),$(NF))
+        BOXMG_GNU_CC_MSG:=Cannot find matching version of gcc, using system gcc!
+        BOXMG_GNU_CC:=gcc
+      else
+        BOXMG_GNU_CC_VER:=$(shell $(CC_TEST) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+        ifeq ($(BOXMG_GNU_CC_VER),$(BOXMG_GNU_FC_VER))
+          BOXMG_GNU_CC:=$(CC_TEST)
+        else
+          BOXMG_GNU_CC_MSG:=Cannot find matching version of gcc, using system gcc!
+          BOXMG_GNU_CC:=gcc
+        endif
+      endif
+    else
+      BOXMG_GNU_CC_VER:=$(shell $(CC_TEST) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+      ifeq ($(BOXMG_GNU_CC_VER),$(BOXMG_GNU_FC_VER))
+        BOXMG_GNU_CC:=$(CC_TEST)
+      else
+	BOXMG_GNU_CC_MSG:=Cannot find matching version of gcc, using system gcc!
+        BOXMG_GNU_CC:=gcc
+      endif
+    endif
+  endif
+
+  # Hack for testing mismatch
+  #BOXMG_GNU_CC_VER:=$(shell gcc -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+  #BOXMG_GNU_CC_MSG:=Cannot find matching version of gcc, using system gcc!
+  #BOXMG_GNU_CC:=gcc
+
+  #
+  #  If there isn't a match we need to identify the library path.
+  #
+  MSG=Cannot find matching
+  ifeq ($(findstring $(MSG),$(BOXMG_GNU_CC_MSG)),$(MSG))
+    BOXMG_GNU_FLIBSp = $(LPOPT)$(shell $(BOXMG_GNU_FC) --print-libgcc | sed -e 's/\/libgcc.a//' )
+  endif
+
+  #
+  #  Search for a matching version of g++ for compiling/linking C++.
+  # 
+  BOXMG_GNU_CXX_MSG:=Found a matching version of g++!
+  BOXMG_GNU_CXX_VER:=$(shell g++ -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+  ifeq ($(BOXMG_GNU_CXX_VER),$(BOXMG_GNU_FC_VER))
+    BOXMG_GNU_CXX:=g++
+  else
+    CXX_TEST:=g++-$(BOXMG_GNU_FC_MAJOR)
+    ifeq ($(findstring $(NF),$(shell $(CXX_TEST) -v 2>&1 | tail -n 1)),$(NF))
+      CXX_TEST:=g++-$(BOXMG_GNU_FC_MAJOR).$(BOXMG_GNU_FC_MINOR)
+      ifeq ($(findstring $(NF),$(shell $(CXX_TEST) -v 2>&1 | tail -n 1)),$(NF))
+	BOXMG_GNU_CXX_MSG:=Cannot find matching version of g++, using system g++!
+        BOXMG_GNU_CXX:=g++
+      else
+        BOXMG_GNU_CXX_VER:=$(shell $(CXX_TEST) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+        ifeq ($(BOXMG_GNU_CXX_VER),$(BOXMG_GNU_FC_VER))
+          BOXMG_GNU_CXX:=$(CXX_TEST)
+        else
+          BOXMG_GNU_CXX_MSG:=Cannot find matching version of g++, using system g++!
+          BOXMG_GNU_CXX:=g++
+        endif
+      endif
+    else
+      BOXMG_GNU_CXX_VER:=$(shell $(CXX_TEST) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+      ifeq ($(BOXMG_GNU_CXX_VER),$(BOXMG_GNU_FC_VER))
+        BOXMG_GNU_CXX:=$(CXX_TEST)
+      else
+        BOXMG_GNU_CXX_MSG:=Cannot find matching version of g++, using system g++!
+        BOXMG_GNU_CXX:=g++
+      endif
+    endif
+  endif
+
+endif
+
+# -------------------------------------------------------
+#  Collect detailed revision information on G95
+# -------------------------------------------------------
+
+NF=not found
+
+ifeq ($(BOXMG_COMPILER),g95)
+
+  ifndef BOXMG_G95_FC
+    BOXMG_G95_FC:=g95
+  endif
+
+  # Magic to determine which g95 we have
+  VERSION_MAGIC_G95:=sed -e 's/.*g95 //' -e 's/!.*//'
+
+  # Magic to determine which gcc built g95
+  VERSION_MAGIC_GCC:=sed -e 's/G95 (GCC //' -e 's/\([0-9].[0-9].[0-9]\).*/\1/'
+
+  BOXMG_G95_FC_VER:=$(shell $(BOXMG_G95_FC) --version 2>&1 | head -n 1 | $(VERSION_MAGIC_G95))
+
+  BOXMG_GNU_FC_VER:=$(shell $(BOXMG_G95_FC) --version 2>&1 | head -n 1 | $(VERSION_MAGIC_GCC))
+  BOXMG_GNU_FC_MAJOR:=$(word 1,$(subst $(period),$(space),$(BOXMG_GNU_FC_VER)))
+  BOXMG_GNU_FC_MINOR:=$(word 2,$(subst $(period),$(space),$(BOXMG_GNU_FC_VER)))
+  BOXMG_GNU_FC_MICRO:=$(word 3,$(subst $(period),$(space),$(BOXMG_GNU_FC_VER)))
+
+  VERSION_MAGIC:=sed -e 's/gcc version //' -e 's/\([0-9].[0-9].[0-9]\).*/\1/'
+  #
+  #  Search for a matching version of gcc for compiling/linking C.
+  # 
+  BOXMG_GNU_CC_MSG:=Found the gcc version that built g95!
+  BOXMG_GNU_CC_VER:=$(shell gcc -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+  ifeq ($(BOXMG_GNU_CC_VER),$(BOXMG_GNU_FC_VER))
+    BOXMG_GNU_CC:=gcc
+  else
+    CC_TEST:=gcc-$(BOXMG_GNU_FC_MAJOR)
+    ifeq ($(findstring $(NF),$(shell $(CC_TEST) -v 2>&1 | tail -n 1)),$(NF))
+      CC_TEST:=gcc-$(BOXMG_GNU_FC_MAJOR).$(BOXMG_GNU_FC_MINOR)
+      ifeq ($(findstring $(NF),$(shell $(CC_TEST) -v 2>&1 | tail -n 1)),$(NF))
+        BOXMG_GNU_CC_MSG:=Cannot find matching version of gcc, using system gcc!
+        BOXMG_GNU_CC:=gcc
+      else
+        BOXMG_GNU_CC_VER:=$(shell $(CC_TEST) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+        ifeq ($(BOXMG_GNU_CC_VER),$(BOXMG_GNU_FC_VER))
+          BOXMG_GNU_CC:=$(CC_TEST)
+        else
+          BOXMG_GNU_CC_MSG:=Cannot find matching version of gcc, using system gcc!
+          BOXMG_GNU_CC:=gcc
+        endif
+      endif
+    else
+      BOXMG_GNU_CC_VER:=$(shell $(CC_TEST) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+      ifeq ($(BOXMG_GNU_CC_VER),$(BOXMG_GNU_FC_VER))
+        BOXMG_GNU_CC:=$(CC_TEST)
+      else
+	BOXMG_GNU_CC_MSG:=Cannot find matching version of gcc, using system gcc!
+        BOXMG_GNU_CC:=gcc
+      endif
+    endif
+  endif
+
+  # Hack for testing mismatch
+  #BOXMG_GNU_CC_VER:=$(shell gcc -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+  #BOXMG_GNU_CC_MSG:=Cannot find matching version of gcc, using system gcc!
+  #BOXMG_GNU_CC:=gcc
+
+  #
+  #  We need to identify the library path.
+  #
+  BOXMG_G95_FLIBSp = $(LPOPT)$(shell $(BOXMG_G95_FC) -print-libgcc-file-name | sed -e 's/\/libgcc.a//' )
+
+
+  #
+  #  Search for a matching version of g++ for compiling/linking C++.
+  # 
+  BOXMG_GNU_CXX_MSG:=Found a matching version of g++!
+  BOXMG_GNU_CXX_VER:=$(shell g++ -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+  ifeq ($(BOXMG_GNU_CXX_VER),$(BOXMG_GNU_FC_VER))
+    BOXMG_GNU_CXX:=g++
+  else
+    CXX_TEST:=g++-$(BOXMG_GNU_FC_MAJOR)
+    ifeq ($(findstring $(NF),$(shell $(CXX_TEST) -v 2>&1 | tail -n 1)),$(NF))
+      CXX_TEST:=g++-$(BOXMG_GNU_FC_MAJOR).$(BOXMG_GNU_FC_MINOR)
+      ifeq ($(findstring $(NF),$(shell $(CXX_TEST) -v 2>&1 | tail -n 1)),$(NF))
+	BOXMG_GNU_CXX_MSG:=Cannot find matching version of g++, using system g++!
+        BOXMG_GNU_CXX:=g++
+      else
+        BOXMG_GNU_CXX_VER:=$(shell $(CXX_TEST) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+        ifeq ($(BOXMG_GNU_CXX_VER),$(BOXMG_GNU_FC_VER))
+          BOXMG_GNU_CXX:=$(CXX_TEST)
+        else
+          BOXMG_GNU_CXX_MSG:=Cannot find matching version of g++, using system g++!
+          BOXMG_GNU_CXX:=g++
+        endif
+      endif
+    else
+      BOXMG_GNU_CXX_VER:=$(shell $(CXX_TEST) -v 2>&1 | tail -n 1 | $(VERSION_MAGIC))
+      ifeq ($(BOXMG_GNU_CXX_VER),$(BOXMG_GNU_FC_VER))
+        BOXMG_GNU_CXX:=$(CXX_TEST)
+      else
+        BOXMG_GNU_CXX_MSG:=Cannot find matching version of g++, using system g++!
+        BOXMG_GNU_CXX:=g++
+      endif
+    endif
+  endif
+
+endif
+
+# -------------------------------------------------------
+# Default compile level is opt
+# -------------------------------------------------------
+
+ifndef BOXMG_CLEVEL
+  BOXMG_CLEVEL=opt
+endif
+
+# -------------------------------------------------------
+#  Default profiling
+# -------------------------------------------------------
+
+ifndef BOXMG_PROFILE
+  BOXMG_PROFILE=no
+endif
+
+# -------------------------------------------------------
+#  Pattern Rules: f90
+# -------------------------------------------------------
+
+%.o : %.f90
+	$(F90) -c $(F90FLAGS) $< -o $@
+
+%.o : %.F90
+	$(F90) -c $(F90FLAGS) $< -o $@
+
+# ============================================================================

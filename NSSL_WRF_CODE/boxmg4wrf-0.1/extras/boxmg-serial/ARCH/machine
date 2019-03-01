@@ -1,0 +1,96 @@
+# ============================================================================
+#  
+#  BoxMG Build System:  "Guess" the MACHINE Type
+#
+# =======================================================================
+# $license_flag$
+# ============================================================================
+
+# -------------------------------------------------------
+#  Defaults for the MACHINE type are set if they aren't
+#  already defined in the users environment
+# -------------------------------------------------------
+
+ifndef OS
+  OS = $(shell uname -s)
+
+  ifeq ($(OS),HI-UX/MPP)
+    OS = HIUX
+  endif
+
+  ifeq ($(OS), Darwin)
+    OS = OSX
+  endif
+
+endif
+
+UNAME_M = $(shell uname -m)
+
+# ---------
+#  COMPAQ
+# ---------
+
+ifeq (OSF1,$(OS))
+  CPU = alpha
+endif
+
+
+# ----------
+# OSX Darwin
+# ----------
+
+ifeq ($(OS), OSX)
+   ifeq ($(findstring Power,$(UNAME_M)),Power)
+      CPU = Power
+   endif
+endif
+
+
+# ---------
+#  LINUX
+# ---------
+
+ifeq ($(OS),Linux)
+
+  ifeq ($(findstring x86_64,$(UNAME_M)),x86_64)
+    CPU = AMD64
+  else
+  ifeq ($(findstring 86,$(UNAME_M)),86)   
+    CPU = intel
+  else
+  ifeq ($(findstring ia64,$(UNAME_M)),ia64)   
+    CPU = ia64
+  else 
+    # this is ok for alpha and sparc, but it's punting otherwise
+    CPU = $(UNAME_M)
+  endif
+  endif
+  endif
+
+  ifndef CPUFAMILY
+    CPUTEMP=$(shell cat /proc/cpuinfo | grep name | sed -e '1 s/.*:/xy/' | grep xy)
+    ifeq ($(findstring Opteron,$(CPUTEMP)),Opteron)
+      CPUFAMILY=opteron
+    else
+    ifeq ($(findstring Athlon,$(CPUTEMP)),Athlon)
+      CPUFAMILY=athlon
+    else
+    ifeq ($(findstring Xeon,$(CPUTEMP)),Xeon)
+      CPUFAMILY=P4
+    else 
+      CPUFAMILY=PIII
+    endif
+    endif
+    endif
+  endif
+
+endif
+
+
+# ---------------------------
+#  Set the machine name
+# ---------------------------
+
+MACHINE = $(OS)-$(CPU)
+
+# ============================================================================

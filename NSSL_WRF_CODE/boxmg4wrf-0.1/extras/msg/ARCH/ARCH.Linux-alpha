@@ -1,0 +1,47 @@
+# ============================================================================
+#
+#  Makefile:  Linux 2.2.x DEC/Alpha  MSG specific macros
+#
+#  Author:  J. David Moulton
+#  Date:    January 13, 2000.
+#
+#
+# ============================================================================
+
+# -------------------
+#   MACROS:
+# -------------------
+
+PRECISION  = DOUBLE
+ARCH_TYPE  = LINUX
+
+ifeq($(COMPILERS),dec) 
+  COMPILER = DEC
+else
+  COMPILER = GNU
+endif
+
+MPI_CC     = mpicc
+MPI_FC     = mpif77
+MPI_LD	   = mpif77
+
+MPI_CFLAGS = -D$(COMPILER)
+MPI_FFLAGS = -D$(PRECISION) -D$(ARCH_TYPE) $(FFLAGS)
+MPI_LFLAGS = 
+
+MPI_RUN    = mpirun
+MPI_RFLAGS = 
+
+# -------------------
+#   RULES:
+# -------------------
+
+.SUFFIXES : .F .o
+
+.F.o :
+		$(MPI_FC) $(MPI_FFLAGS) -c $<
+
+
+# ============================================================================
+
+

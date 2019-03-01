@@ -1,0 +1,54 @@
+# ============================================================================
+#
+#  Makefile:  Tru64 (OSF1) - alpha  MSG specific macros
+#
+#  Author:  J. David Moulton
+#  Date:    July 22, 2003.
+#
+#
+# ============================================================================
+
+# -------------------
+#   MACROS:
+# -------------------
+
+PRECISION  = DOUBLE
+ARCH_TYPE  = OSF1
+
+ifeq ($(COMPILERS),dec) 
+  COMPILER = DEC
+else
+  COMPILER = GNU
+endif
+
+MPI_CC     = $(CC)
+MPI_FC     = $(FC)
+MPI_LD	   = $(FC)
+
+MPI_CFLAGS = -D$(ARCH_TYPE) -D$(COMPILER)
+MPI_FFLAGS = -D$(PRECISION) -D$(ARCH_TYPE) $(MPI_COMPILE_FLAGS) $(FFLAGS)
+MPI_LFLAGS =
+
+MPI_SYSLIBS = $(MPI_LD_FLAGS) -lfmpi -lmpi -lelan
+
+ifeq ($(CLEVEL),vampir)
+  MPI_SYSLIBS = -L${VGV_HOME}/lib -lVT -lmld ${MPI_LD_FLAGS} -lfmpi -lmpi -lelan -lpmpi -lexc -lm -lpthread
+endif
+
+MPI_RUN    = prun
+MPI_RFLAGS =  
+
+# -------------------
+#   RULES:
+# -------------------
+
+.SUFFIXES : .F .c .o
+
+.F.o :
+	$(MPI_FC) $(MPI_FFLAGS) -c $<
+
+.c.o :
+	$(MPI_CC) $(MPI_CFLAGS) -c $<
+# ============================================================================
+
+

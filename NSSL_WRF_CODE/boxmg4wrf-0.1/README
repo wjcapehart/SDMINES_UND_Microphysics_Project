@@ -1,0 +1,82 @@
+===============================================================================
+README                                             boxmg4wrf (2015/04/30)
+===============================================================================
+
+   (Parallel) Black Box Multigrid for (2D and 3D) Symmetric Problems
+
+     This package contains an MPI-based parallel version of the robust
+  Black Box Multigrid (BoxMG) algorithm that is largely based on the
+  evolving serial version (currently 1.6.4).  Specifically, it is a
+  parallel implementation of the BoxMG algorithm for symmetric 2D
+  problems described in [1], and for symmetric 3D problems described
+  in [3].  At this point it does not support the periodic or
+  indefinite case, which is discussed in [2], nor does it include
+  plane relaxation. Both of these features will be added in the near
+  future.
+
+      In two dimensions the code is suitable for discretizations of
+  elliptic PDEs on a structured (logically rectangular) grids with up
+  to 9 points in the stencil.  Similarly in three dimensions the code
+  is suitable for discretizations of elliptic PDEs on structured
+  (logically hexahedral) grids with up to 27 points in the stencil.
+  Boundary conditions may be Dirichlet, Neumann or Robin, provided
+  that the underlying matrix is symmetric positive definite.  The user
+  is only required to provide the fine-grid stencil, the discrete
+  right hand side, and an initial guess.  The code generates all
+  coarse-grid and intergrid transfer operators. We note that is
+  possible to treat both vertex- and cell-based discretizations
+  provided the underlying structure is consistent with a logically
+  rectangular or hexahedral grid.
+
+     There should be very little trouble in porting BoxMG to different
+  platforms.  The current configuration has been tested on Linux/Intel
+  Linux/Alpha, Tru64(OSF1)/Alpha, and IRIX/R10K.
+
+----------------------------------------------
+ Feedback:
+----------------------------------------------
+
+This version is not actively supported, but you can try sending email to graupel@users.sf.net, who will try to answer as time allows.
+
+----------------------------------------------
+ References:
+----------------------------------------------
+
+  [1] J. E. Dendy, Jr., "Black Box Multigrid", J. Comput. Phys.,
+      48, 366, (1982).
+
+  [2] J. E. Dendy, Jr., "Black Box Multigrid for Periodic and 
+      Singular Problems", Appl. Math. and Comput., 23, 1, (1988).
+
+  [3] J. E. Dendy, Jr., "Two Multigrid Methods for Three-Dimensional
+      Problems with Discontinuous and Anisotropic Coefficients", 
+      SIAM J. Sci. Stat. Comp., Vol. 8, No. 2, pp. 673-685, (1987).
+
+  [4] Put in the highlight
+
+----------------------------------------------
+ History, Contributions, and Collaborations:
+----------------------------------------------
+ 
+  The README for the serial version is included in extras/boxmg,
+  and includes comments about the History of the serial code.
+  As noted there Joel Dendy wrote the vast majority of the 
+  original "legacy" code, and most of these core computational
+  elements are preserved here.  The refactoring and recent development
+  (1999-2004) was done by David Moulton, Markus Berndt, Joel Dendy, 
+  and Travis Austin.  The code has been used by a growing number of 
+  our collaborators, including Scott MacLachlan and Dhavide Aruliah, 
+  who also kindly reported a bug, or three.  We hope more people will 
+  find it useful in the future.  If there are features you need let us 
+  know, it may be possible to add them. 
+
+----------------------------------------------
+ NonSymmetric BoxMG:
+----------------------------------------------
+
+  As noted in the README of the serial version, if there is sufficient
+  interest, refactoring a nonsymmetric version of the BoxMG code would
+  be possible.  So feel free to contact us if you would find this useful.
+
+===============================================================================
+

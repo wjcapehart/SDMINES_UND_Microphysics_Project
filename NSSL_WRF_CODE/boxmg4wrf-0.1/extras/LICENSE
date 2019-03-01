@@ -1,0 +1,21 @@
+===============================================================================
+LICENSE                                            
+===============================================================================
+
+This directory contains subroutines from a few different packages,
+as well as the MSG-2.0 package. These are freely-available from either
+
+http://www.netlib.org
+
+In addition, it includes the serial version of the BoxMG library
+(with postprocessed names to accomodate limitations in Fortran 77),
+available from 
+
+http://software.lanl.gov/boxmg
+
+Although all the source code is in the public domain, the open source
+licensing of each code varies.  Please refer to the README or COPYRIGHT 
+file located in each package's subdirectory to determine if there are any
+restrictions that apply to your use or distribution of the code.
+
+===============================================================================

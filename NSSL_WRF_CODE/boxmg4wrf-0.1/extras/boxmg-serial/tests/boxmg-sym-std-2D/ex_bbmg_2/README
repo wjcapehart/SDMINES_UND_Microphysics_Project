@@ -1,0 +1,172 @@
+==============================================================================
+
+This is example EX2.BBMG from Victor Bandy's driver interfaces for a 
+two-dimensional version of Joel Dendy's BoxMG code (original readme
+follows). Please note that this the public-domain license information
+for this example is at the end of this file.
+
+==============================================================================
+readme:
+-----------------------
+
+This is the packing list and instructions for Joel Dendy's BlackBox Multigrid
+codes and Victor Bandy's three driver interfaces.
+
+
+------------------- Black Box Multigrid Solver's ---------------------------
+
+BOXMG routines:   boxmg.f
+                  bmgkey.f
+                  mgcoef.f
+                  mggrd.f
+                  mginad.f
+                  mgotpt.f
+                  mgputw.f
+                  mgrcal.f
+                  mgrlx.f
+                  mgsadd.f
+                  mgsset.f
+
+
+BOXMGP routines:  boxmgp.f
+                  bmgkey.f
+                  mgcofp.f
+                  mggrd.f
+                  mgiadp.f
+                  mgotpt.f
+                  mgputw.f
+                  mgrcap.f
+                  mgrlxp.f
+                  mgsadp.f
+                  mgsetp.f
+
+---------------------- Driver Interfaces ----------------------------------
+
+BBMG interface routine:   bbmg.f
+
+
+
+BBMGP interface routine:   bbmgp.f
+
+
+DIVMG driver interface routines:   divmg.f
+                                   checker.f
+                                   dvmgcp.f
+                                   dvmgdf.f
+                                   dvmgsb.f
+                                   dvmgxp.f
+                                   icheck.f
+                                   putf.f
+
+
+---------------------- utility routines ------------------------------------
+
+makefile.bbmg
+
+makefile.bbmgp
+
+makefile.divmg
+
+------------------- library routines needed ---------------------------------
+
+LINPACK rouintes:
+                    r1mach
+                    fdump.f
+                    i1mach.f
+                    j4save.f
+                    r1mach.f
+                    saxpy.f
+                    sdot.f
+                    spbfa.f
+                    spbsl.f
+                    spofa.f     (not needed for boxmg, bbmg)
+                    sposl.f     (not needed for boxmg, bbmg)
+                    xerabt.f
+                    xerctl.f
+                    xerprt.f
+                    xerrwv.f
+                    xersav.f
+                    xgetua.f
+
+SLATEC routines:   xermsg     (see below about dummy routines)
+
+-----------------------------------------------------------------------------
+
+Dummy routines:   timer.f     This routine should call the system timer that
+                              your computer has, if available. This routine
+                              can also be left as a null routine.
+                              (Currently it contains a call to the timer for
+                              the Sequent available at CU-Denver.)
+
+                  xermsg.f    This routine is a from the SLATEC subroutine
+                              math library. If you have the current version
+                              of the SLATEC library then xermsg should be
+                              available to you. If you don't, then you can
+                              either make a call to some other error message
+                              handler or leave this as a null routine.
+
+
+-------------------------- EXAMPLES ------------------------------------
+
+Example EX1.BBMG:   main.f
+                    putf.f
+                    diff.f
+                    output
+
+Example EX2.BBMG:   main.f
+                    putf.f
+                    pcoef.f
+                    esol.f
+                    output
+
+Example EX1.BBMGP:   main.f
+                     putf.f
+                     normal.f
+                     checker.f
+                     exsoln.f
+                     output
+
+Example EX1.DIVMG:   main.f
+                     coef.f
+                     output
+
+==============================================================================
+==============================================================================
+
+You should now have the above files. These files may be split into thier
+individual components by using the UNIX command 'fsplit filename'.
+You will notice that there are a few routines in common between BOXMG 
+and BOXMGP, these routines are indeed the same and need not be duplicated,
+but have been included in each shipping.
+
+The driver interface routines are shipped separate in one file together.
+
+The documentation for the drivers si located in the headers to the codes
+BBMG.F, BBMGP.F, and DIVMG.F the original documentation for the solvers
+is still located in the headers to those files, BOXMG.F and BOXMGP.F
+
+The examples have both the code and the resulting output.
+
+PORTING: The code should be fairly portable and has executed successfully
+in the present form on several computers under UNIX, ULTRIX, and VMS.
+You need to make sure that the library routine R1MACH.F is set to your
+computers values. Also you should correct the call in TIMER.F to your
+computers timing clock.
+As usual you may have to fiddle with the I/O (e.g. write) statements inorder
+to obtain output from the code. The I/O unit is set to '*' in the codes so
+that the default I/O unit will be used.
+Note: that the majority of the testing and the current configuration are
+for UNIX 4.2BSD
+
+Feel free to distribute this code, but it can not be sold, or have the
+copyright tag and authorship removed from it.
+
+Any feedback on this package would be appreciated, also I would be very
+interested in recieving any 'test/example' codes that you create (the form
+that it is in is not that important as long as I know what the problem and
+the domain is that are being used.)
+Thanks.
+
+
+Victor Bandy      (303)556-4888     Email: vbandy@copper.denver.colorado.edu
+Computational Mathematics Group     University of Colorado at Denver

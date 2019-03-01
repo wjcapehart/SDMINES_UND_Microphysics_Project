@@ -1,0 +1,98 @@
+# ============================================================================
+#
+#  Example:  Jacobi Iteration of 2D Laplace's Equation
+#
+#  Author:  J. David Moulton
+#  Date:    January 13, 2000.
+#
+# ============================================================================
+
+SHELL=/bin/sh
+
+ifndef MAKE
+MAKE=make
+endif
+
+ifndef EXTRASdist
+EXTRASdist = ../../..
+endif
+
+# -------------------------
+#  Standard Global Macros:
+# -------------------------
+
+include $(EXTRASdist)/../make/global
+
+# --------------------
+#  Architecture:
+# --------------------
+
+include $(BOXMG_ARCHmake)/ARCH.$(BOXMG_ARCH)
+
+# ---------------------
+#  MSG specific:
+# ---------------------
+
+include $(EXTRASdist)/msg/ARCH/ARCH.$(BOXMG_ARCH)
+
+BOXMG_FINC = -I../../include
+BOXMG_CINC = -I../../include
+
+# --------------------
+#  LIBRARIES:
+# --------------------
+
+LIBBMGx  = boxmg-extras_$(BOXMG_CLEVEL)
+LIBCHEK  = $(EXTRASdist)/../lib/lib$(LIBBMGx).a
+
+LIBPATH  = $(LPOPT)$(EXTRASdist)/../lib
+LIBLIST  = $(LLOPT)$(LIBBMGx)
+
+MPI_LD = mpif77
+
+# ============================================================================
+
+# ----------------------
+#   Object Modules:
+# ----------------------
+
+MAIN = jacobi2DMSG2.o
+
+# ----------------------
+#   Collect the Macros:
+# ----------------------
+
+OBJS = $(MAIN)
+LIBS = $(LIBPATH) $(LIBLIST) $(MPI_SYSLIBS) $(SYSLIBS) 
+
+EXE = jacobi
+
+INPUT = input.txt
+OUTPUT = output.txt
+
+# ========================================================================= 
+
+# -----------------
+#   TARGETS:
+# -----------------
+
+test: $(EXE)
+#	@echo "Executing the command:  $(MPI_RUN) $(MPI_RFLAGS) $(EXE)" 
+#	$(MPI_RUN) $(MPIRUN_FLAGS) $(EXE) 
+
+$(EXE): $(OBJS) $(LIBCHEK)
+	@echo "Linking objects ....  $(MPI_LD) $(MPI_LFLAGS) $(MPI_FFLAGS) $(OBJS) $(LIBS) -o $(EXE)" ;\
+	$(MPI_LD) $(MPI_LFLAGS) $(MPI_FFLAGS) $(OBJS) $(LIBS) -o $(EXE);\
+	echo "The executable $(EXE) has been created."
+
+clean:
+	@echo "Removing objects .... " ;\
+	$(RM) -f $(OBJS)
+
+distclean:
+	@echo "Removing objects, $(EXE) and $(OUTPUT) ... ";\
+	$(RM) -f $(OBJS) $(EXE) $(OUTPUT)
+
+# ============================================================================
+
+

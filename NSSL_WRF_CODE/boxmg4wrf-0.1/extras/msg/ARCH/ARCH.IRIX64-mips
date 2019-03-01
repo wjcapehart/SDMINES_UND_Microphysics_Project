@@ -1,0 +1,43 @@
+# ============================================================================
+#
+#  Makefile:  IRIX64  MSG specific macros
+#
+#  Author:  M. Berndt
+#  Date:    Feb 17, 2000.
+#
+#
+# ============================================================================
+
+# -------------------
+#   MACROS:
+# -------------------
+
+PRECISION  = DOUBLE
+ARCH_TYPE  = IRIX64
+
+MPI_CC     = cc
+MPI_FC     = f77
+MPI_LD	   = f77
+
+MPI_CFLAGS = -D$(PRECISION) -D$(ARCH_TYPE) $(CFLAGS)
+MPI_FFLAGS = -D$(PRECISION) -D$(ARCH_TYPE) $(FFLAGS)
+MPI_LFLAGS = $(FFLAGS)
+
+MPI_RUN    = mpirun
+MPI_RFLAGS = 
+
+# -------------------
+#   RULES:
+# -------------------
+
+.SUFFIXES : .c .F .o
+
+.F.o :
+		$(MPI_FC) $(MPI_FFLAGS) -c $<
+
+.c.o :
+		$(MPI_CC) $(MPI_CFLAGS) -c $<
+
+# ============================================================================
+
+

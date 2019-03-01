@@ -1,0 +1,52 @@
+# ============================================================================
+#  
+#  BoxMG Build System: Source/Library  paths and names
+#
+# =======================================================================
+# $license_flag$
+# ============================================================================
+
+# -------------------------------------------------------
+#  Default ARCH path based on distribution directory.
+# -------------------------------------------------------
+
+ifndef ARCHmake
+  ARCHmake = $(BOXMGdist)/ARCH
+endif
+
+# -------------------------------------------------------
+#  Sources
+# -------------------------------------------------------
+
+SRC2D  = $(BOXMGdist)/src/boxmg-sym-std-2D
+SRC3D  = $(BOXMGdist)/src/boxmg-sym-std-3D
+
+TESTS_2D  = $(BOXMGdist)/tests/boxmg-sym-std-2D
+TESTS_3D  = $(BOXMGdist)/tests/boxmg-sym-std-3D
+
+# -------------------------------------------------------
+#  Default library path based on distribution directory.
+# -------------------------------------------------------
+
+ifndef BOXMGlibp
+  BOXMGlibp = $(BOXMGdist)/lib
+endif
+
+ifndef EXTRASlibp
+  EXTRASlibp = $(BOXMGlibp)
+endif
+
+# -------------------------------------------------------
+#  Library:
+# -------------------------------------------------------
+
+ifndef BOXMGlibn
+  BOXMGlibn  = libboxmg_$(BOXMG_CLEVEL)_$(BOXMG_libprec).a
+endif
+
+ifndef EXTRASlibn
+  EXTRASlibn = libboxmg-extras_$(BOXMG_CLEVEL)_$(BOXMG_libprec).a
+endif
+
+# ============================================================================
+

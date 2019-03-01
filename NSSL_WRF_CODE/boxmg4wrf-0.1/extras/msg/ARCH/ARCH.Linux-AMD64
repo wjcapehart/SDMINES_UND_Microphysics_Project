@@ -1,0 +1,41 @@
+# ============================================================================
+#
+#  Makefile:  Linux AMD64 (x86_64)  MSG specific macros
+#
+#
+# ============================================================================
+
+# -------------------
+#   MACROS:
+# -------------------
+
+PRECISION  = $(BOXMG_PRECISION)
+ARCH_TYPE  = LINUX
+
+MPI_CC     = $(CC)
+MPI_FC     = $(FC)
+MPI_LD	   = $(F77_LD)
+
+MPI_CFLAGS = -D$(ARCH_TYPE) $(CFLAGS)
+MPI_FFLAGS = -D$(PRECISION) -D$(ARCH_TYPE) $(FFLAGS)
+MPI_LFLAGS = 
+
+MPI_RUN    = mpirun
+MPI_RFLAGS = 
+
+# -------------------
+#   RULES:
+# -------------------
+
+.SUFFIXES : .c .F .o
+
+.F.o :
+		$(MPI_FC) $(MPI_FFLAGS) -c $<
+
+.c.o :
+		$(MPI_CC) $(MPI_CFLAGS) -c $<
+
+
+# ============================================================================
+
+

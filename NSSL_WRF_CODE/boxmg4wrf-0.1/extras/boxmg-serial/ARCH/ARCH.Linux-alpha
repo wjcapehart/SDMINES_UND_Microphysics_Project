@@ -1,0 +1,175 @@
+# ============================================================================
+#
+#  Makefile Defaults:  Linux - alpha
+#
+# =======================================================================
+# $license_flag$
+# =======================================================================
+# --------------------------
+#  Generic Compiler Notes:
+# --------------------------
+#
+#    **NOTE: For MPI code any Name Mangling compatibility options should 
+#            already be included in the mpif77/mpicc scripts. So it is
+#            to aid in resolving problems with inconsistent installations,
+#            MPI distributions that don't provide compiler scripts, and
+#            serial components of the code.
+#
+# ============================================================================
+
+# >>>>>>>>>>>>>>>>>>>>> SET: DEC COMPILER OPTIONS <<<<<<<<<<<<<<<<<<<<<<<
+ifeq ($(COMPILER),dec) 
+
+# =====================
+#  Compiler:
+# =====================
+
+FC = fort
+CC = ccc 
+
+# =====================
+#  Flags:
+# =====================
+
+ifeq ($(CLEVEL),opt)
+  ifndef TUNE
+    TUNE = -arch host -tune host
+  endif
+  FFLAGS = $(FINC) -O5 -pipeline $(TUNE) -align dcommons
+  CFLAGS = 
+else
+  ifndef TUNE
+    TUNE = -arch generic -tune generic
+  endif 
+  FFLAGS = $(FINC) -g2 -C -ladebug $(TUNE) -align dcommons
+  CFLAGS = 
+endif
+
+# =====================
+#  Linker:
+# =====================
+
+LD = ld
+LFLAGS = 
+
+F77_LD = fort
+F77_LFLAGS =
+
+CC_LD = ccc
+CC_LFLAGS = 
+
+# ======================
+#  Library search path:
+# ======================
+
+LPOPT = -L
+
+# ======================
+#  Library option:
+# ======================
+
+LLOPT = -l
+
+# ======================
+#  System libraries:
+# ======================
+
+ifeq ($(TUNED_MATH),yes)
+  MATHLIBS = -lcpml -lcxml
+  SYSLIBS  = 
+else
+  MATHLIBS = 
+  SYSLIBS  =
+endif
+
+# >>>>>>>>>>>>>>>>>>>>>>> ELSE: GNU COMPILERS <<<<<<<<<<<<<<<<<<<<<<<<<
+else
+
+# =====================
+#  Compiler:
+# =====================
+
+FC = g77 
+CC = gcc 
+
+# =====================
+#  Flags:
+# =====================
+
+ifeq ($(CLEVEL),opt)
+  FFLAGS = $(FINC) -Wall -O3
+  CFLAGS = -Wall -O3
+else
+  FFLAGS = $(FINC) -Wall -g
+  CFLAGS = -Wall -g
+endif
+
+# =====================
+#  Linker:
+# =====================
+
+LD = ld
+LFLAGS = 
+
+F77_LD = g77
+F77_LFLAGS = 
+
+CC_LD = gcc
+CC_LFLAGS = 
+
+# ======================
+#  Library search path:
+# ======================
+
+LPOPT = -L
+
+# ======================
+#  Library option:
+# ======================
+
+LLOPT = -l
+
+# ======================
+#  System libraries:
+# ======================
+
+SYSLIBS =
+
+endif
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ENDIF <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+# ======================
+#  Archiver:
+# ======================
+
+AR = ar
+AFLAGS =csrv 
+
+RANLIB = ranlib
+
+# ======================
+#  Make
+# ======================
+
+MFLAGS = --no-print-directory
+MAKE = make
+
+# ======================
+#  Tools: 
+# ======================
+
+MV = /bin/mv 
+RM = /bin/rm
+CP = /bin/cp
+CD = cd
+
+MKDIR = /bin/mkdir
+
+CHMOD = /bin/chmod
+CHGRP = /bin/chgrp
+
+# ===========================================================
+
+
+

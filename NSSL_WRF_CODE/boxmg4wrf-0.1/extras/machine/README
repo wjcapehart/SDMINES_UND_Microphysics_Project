@@ -1,0 +1,54 @@
+==============================================================================
+
+i1mach.f, d1mach.f
+
+This directory contains machine constants definition subroutines
+from SLATEC Library written by Fox et al.  Below you will find the
+contents of the original readme file from the SLATEC Common
+Mathematical Library, and Section 4 from the Guide notes that this
+software is in the public domain.  The software is available on netlib
+
+http://www.netlib.org/slatec/fnlib/rand.f
+
+We have modified these files accordingly for these newer systems. Yes,
+this process is crufty, and we do plan on updating this whole tree
+someday, as these constants are not used in any serious way by BoxMG.
+
+BMG_timer.f
+
+Our own machine specific timer routine.  This has the same LGPL
+license as the main library (refer to the source code or to
+the top-level LICENSE file).
+
+==============================================================================
+
+-------------------------
+SLATEC README:
+-------------------------
+
+SLATEC Common Mathematical Library, Version 4.1, July 1993
+a comprehensive software library containing over
+1400 general purpose mathematical and statistical routines
+written in Fortran 77.
+
+--------------------------
+SLATEC GUIDE (SECTION 4):
+--------------------------
+
+*******************************************************************************
+ 
+SECTION 4.  OBTAINING THE LIBRARY
+ 
+The Library is in the public domain and distributed by the Energy Science
+and Technology Software Center.
+ 
+               Energy Science and Technology Software Center
+               P.O. Box 1020
+               Oak Ridge, TN  37831
+ 
+               Telephone  615-576-2606
+               E-mail  estsc%a1.adonis.mrouter@zeus.osti.gov
+ 
+ 
+ 
+*******************************************************************************

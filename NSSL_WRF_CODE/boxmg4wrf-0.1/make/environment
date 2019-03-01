@@ -1,0 +1,97 @@
+# ============================================================================
+#  
+#  BoxMG Build System: Environment Debugging
+#
+# =======================================================================
+# $license_flag$
+# ============================================================================
+
+environment env: ENV_SYSTEM ENV_SERIAL ENV_MPI
+
+ENV_SYSTEM:
+	@echo " ----------------------------------------------------------- "
+	@echo "  BoxMG Environment Variables "
+	@echo " ----------------------------------------------------------- "
+	@echo "  * System type and compiler family "
+	@echo " --------------------------------------"
+	@echo ""
+	@echo "  BOXMG_OS           = $(BOXMG_OS)"
+	@echo "  BOXMG_CPU          = $(BOXMG_CPU)"
+	@echo "  BOXMG_ARCH         = $(BOXMG_ARCH)"
+	@echo ""
+	@echo "  BOXMG_COMPILER     = $(BOXMG_COMPILER)"
+	@echo "  BOXMG_CLEVEL       = $(BOXMG_CLEVEL)"
+	@echo ""
+	@echo "  BOXMG_PRECISION     = $(BOXMG_PRECISION)"
+	@echo ""
+
+ENV_SERIAL:
+	@( $(MAKE) env_serial BOXMG_MPI=no BOXMG_OMP=no $(MFLAGS) )
+
+env_serial:
+	@echo " --------------------------------------"
+	@echo "  * Compilers: serial "
+	@echo " --------------------------------------"
+	@echo ""
+	@echo "  BOXMG_GCC_VER      = $(BOXMG_GCC_VER)"
+	@echo "  BOXMG_GNU_FC       = $(BOXMG_GNU_FC)"
+	@echo "  BOXMG_GNU_FC_VER   = $(BOXMG_GNU_FC_VER)"
+	@echo "  BOXMG_GNU_CC       = $(BOXMG_GNU_CC)"
+	@echo "  BOXMG_GNU_CC_VER   = $(BOXMG_GNU_CC_VER)"
+	@echo "  BOXMG_GNU_CXX      = $(BOXMG_GNU_CXX)"
+	@echo "  BOXMG_GNU_CXX_VER  = $(BOXMG_GNU_CXX_VER)"
+	@echo ""
+	@echo "  FC                 = $(FC)"
+	@echo "  FFLAGS             = $(FFLAGS)"
+	@echo "  F90                = $(F90)"
+	@echo "  F90FLAGS           = $(FFLAGS)"
+	@echo ""
+	@echo "  CC                 = $(CC)"
+	@echo "  CFLAGS             = $(CFLAGS)"
+	@echo "  CXX                = $(CXX)"
+	@echo "  CXXFLAGS           = $(CXXFLAGS)"
+	@echo ""
+	@echo "  CPPFLAGS           = $(CPPFLAGS)"
+	@echo ""
+
+ENV_MPI:
+	@( $(MAKE) env_mpi BOXMG_MPI=yes BOXMG_OMP=no $(MFLAGS) )
+
+env_mpi:
+	@echo " --------------------------------------"
+	@echo "  * Compilers: parallel "
+	@echo " --------------------------------------"
+	@echo ""
+	@echo "  BOXMG_MPI          = $(BOXMG_MPI)"
+	@echo "  BOXMG_MPI_DIST     = $(BOXMG_MPI_DIST)"
+	@echo ""
+	@echo "  BOXMG_OMP          = $(BOXMG_OMP)"
+	@echo ""
+	@echo "  FC                 = $(FC)"
+	@echo "  FFLAGS             = $(FFLAGS)"
+	@echo "  F90                = $(F90)"
+	@echo "  F90FLAGS           = $(FFLAGS)"
+	@echo ""
+	@echo "  CC                 = $(CC)"
+	@echo "  CFLAGS             = $(CFLAGS)"
+	@echo "  CXX                = $(CXX)"
+	@echo "  CXXFLAGS           = $(CXXFLAGS)"
+	@echo ""
+	@echo "  CPPFLAGS           = $(CPPFLAGS)"
+	@echo ""
+
+ENV_LANG:
+	@( $(MAKE) env_lang $(MFLAGS) )
+
+env_lang:
+	@echo " --------------------------------------"
+	@echo "  * Optional language support "
+	@echo " --------------------------------------"
+	@echo ""
+	@echo "  BOXMG_BUILD_F90    = $(BOXMG_BUILD_F90)"
+	@echo "  BOXMG_BUILD_C      = $(BOXMG_BUILD_C)"
+	@echo "  BOXMG_BUILD_MATLAB = $(BOXMG_BUILD_MATLAB)"
+	@echo ""
+	@echo " ----------------------------------------------------------- "
+
+
